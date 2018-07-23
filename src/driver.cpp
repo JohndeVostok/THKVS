@@ -1,4 +1,5 @@
 #include "driver.h"
+#include "crc.hpp"
 #include <fstream>
 #include <sstream>
 #include <unordered_set>
@@ -28,22 +29,15 @@ Driver::Driver() {
 Driver::~Driver() {}
 
 unsigned Driver::hash(string &str) {
-	unsigned x = 0, t = 1;
-	int l = str.size();
-	for (int i = 0; i < l; i++) {
-		x += str[i] * t;
-		t *= 31;
-	}
-	return x;
+	return getCRC(str);
 }
 
 void Driver::getServers(string &key, vector <int> &servers) {
 	servers.clear();
-	string str = key + "salted";
-	unsigned keyhash = hash(str);
+	unsigned keyhash = hash(key);
 	printf("%u\n", keyhash);
 	auto iter = nodeMap.lower_bound(keyhash);
-	for (int i = 0; i < 3; i++) {
+	while (servers.size() < 3) {
 		printf("%u %d\n", iter->first, iter->second);
 		int flag = 0;
 		for (auto &t : servers) {
@@ -76,7 +70,7 @@ void Driver::put() {
 		printf("%d ", t);
 	}
 	printf("\n");
-	str = "sb";
+	str = "sd";
 	getServers(str, s);
 	for (auto &t : s) {
 		printf("%d ", t);
