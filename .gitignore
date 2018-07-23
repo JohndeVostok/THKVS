@@ -255,3 +255,6 @@ CTestTestfile.cmake
 
 # gedit
 *~
+
+# windows exe
+*.exe
