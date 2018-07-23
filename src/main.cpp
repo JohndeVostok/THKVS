@@ -2,6 +2,7 @@
 
 int main() {
 	Driver driver;
-	driver.put();
+	string key = "a", value = "b";
+	driver.put(key, value);
 	return 0;
 }

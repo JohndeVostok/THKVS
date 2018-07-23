@@ -12,18 +12,19 @@ Driver::Driver() {
 	}
 	for (int i = 0; i < hostList.size(); i++) {
 		auto &host = hostList[i];
-		ostringstream oss;
+		ostringstream buf;
 		string tmpstr;
 		unsigned nodehash;
 		for (int j = 0; j < (NODECOPY); j++) {
-			oss.str("");
-			oss << host.host << "#" << j;
-			tmpstr = oss.str();
+			buf.str("");
+			buf << host.host << "#" << j;
+			tmpstr = buf.str();
 			nodehash = hash(tmpstr);
 			nodeMap.emplace(nodehash, i);
 		}
 	}
 	fin.close();
+	hostCount.resize(hostList.size());
 }
 
 Driver::~Driver() {}
@@ -35,10 +36,8 @@ unsigned Driver::hash(string &str) {
 void Driver::getServers(string &key, vector <int> &servers) {
 	servers.clear();
 	unsigned keyhash = hash(key);
-	printf("%u\n", keyhash);
 	auto iter = nodeMap.lower_bound(keyhash);
 	while (servers.size() < 3) {
-		printf("%u %d\n", iter->first, iter->second);
 		int flag = 0;
 		for (auto &t : servers) {
 			if (t == iter->second) {
@@ -47,6 +46,7 @@ void Driver::getServers(string &key, vector <int> &servers) {
 		}
 		if (!flag) {
 			servers.emplace_back(iter->second);
+			hostCount[iter->second]++;
 		}
 		if (iter == nodeMap.end()) {
 			iter = nodeMap.begin();
@@ -56,24 +56,13 @@ void Driver::getServers(string &key, vector <int> &servers) {
 	}
 }
 
-void Driver::put() {
+int Driver::put(string &key, string &value) {
 	vector <int> s;
-	string str = "sb";
-	getServers(str, s);
-	for (auto &t : s) {
-		printf("%d ", t);
+	for (int i = 0; i < (1 << 16); i++) {
+		ostringstream buf;
+		buf << rand();
+		key = buf.str();
+		getServers(key, s);
 	}
-	printf("\n");
-	str = "sc";
-	getServers(str, s);
-	for (auto &t : s) {
-		printf("%d ", t);
-	}
-	printf("\n");
-	str = "sd";
-	getServers(str, s);
-	for (auto &t : s) {
-		printf("%d ", t);
-	}
-	printf("\n");
+	for (int i = 0; i < hostCount.size(); i++) printf("%d\n", hostCount[i]);
 }

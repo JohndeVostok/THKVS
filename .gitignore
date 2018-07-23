@@ -258,3 +258,5 @@ CTestTestfile.cmake
 
 # windows exe
 *.exe
+*.out
+*.gch

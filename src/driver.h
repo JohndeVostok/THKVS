@@ -24,13 +24,14 @@ private:
 
 	map <unsigned, int> nodeMap;
 	vector <Host> hostList;
+	vector <int> hostCount;
 	unsigned hash(string &str);
 	void getServers(string &key, vector <int> &servers);
 public:
 	Driver();
 	~Driver();
-	void put();
-	void get();
+	int put(string &key, string &value);
+	int get(string &key, string &value);
 };
 
 #endif
