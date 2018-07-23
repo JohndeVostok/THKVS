@@ -43,7 +43,24 @@ void TcpConnection::handle_body(const boost::system::error_code& error) {
     std::istringstream istream(read_msg.body());
     std::string tmp = std::string(read_msg.body());
     boost::archive::text_iarchive ia(istream);
-    
+    switch (read_msg.message_type()) {
+        case m_text: {
+            TextMessage tM;
+            ia >> tM;
+            msgToRecv = std::make_shared<TextMessage>(tM);
+            break;
+        }
+        default: {
+            break;
+        }
+    }
+    manager::recvQue.push(msgToRecv);
+    finalize();
+}
+
+void TcpConnection::finalize() {
+    boost::system::error_code error;
+    socket_.shutdown(as::ip::tcp::socket::shutdown_both, error);
 }
 
 

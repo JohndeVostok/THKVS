@@ -9,6 +9,7 @@
 #include "message.hpp"
 #include "msg_queue.hpp"
 #include <boost/bind.hpp>
+#include "manager.hpp"
 
 namespace as = boost::asio;
 
@@ -37,6 +38,7 @@ public:
 
     void handle_body(const boost::system::error_code& error);
 
+    void finalize();
 private:
     TcpConnection(as::io_service& io_service);
     as::ip::address peerIp;
