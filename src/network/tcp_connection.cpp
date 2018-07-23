@@ -55,13 +55,61 @@ void TcpConnection::handle_body(const boost::system::error_code& error) {
         }
     }
     manager::recvQue.push(msgToRecv);
-    finalize();
+    finalize(boost::system::errc::make_error_code(boost::system::errc::success));
 }
 
-void TcpConnection::finalize() {
-    boost::system::error_code error;
-    socket_.shutdown(as::ip::tcp::socket::shutdown_both, error);
+void TcpConnection::finalize(const boost::system::error_code& error) {
+    std::cout << boost::system::system_error(error).what() << std::endl;
+    if (!error) {
+        boost::system::error_code ec;
+        socket_.shutdown(as::ip::tcp::socket::shutdown_both, ec);
+    }
 }
+
+bool TcpConnection::connect(std::string& ipString, int port) {
+    auto ip = as::ip::address::from_string(ipString);
+    as::ip::tcp::endpoint endpoint(ip, port);
+    boost::system::error_code error;
+    socket_.connect(endpoint, error);
+    if (!error) {
+        write_message();
+    }
+    return true;
+}
+
+void TcpConnection::write_message() {
+    std::shared_ptr<Message> msgToSend;
+    manager::get_writable_msg(msgToSend);
+
+    std::ostringstream archive_stream;
+    boost::archive::text_oarchive archive(archive_stream);
+
+    std::shared_ptr<TextMessage> tm;
+
+    switch (msgToSend->type) {
+        case m_text: {
+            tm = std::dynamic_pointer_cast<TextMessage>(msgToSend);
+            archive << (*tm);
+            break;
+        }
+        default: {
+            break;
+        }
+    }
+
+
+    size_t write_body_size = archive_stream.str().length();
+    char write_msg_type = (char)msgToSend->type;
+    std::string write_serialized_msg = std::string(archive_stream.str(), write_body_size);
+    buffers.push_back(as::const_buffer(&write_body_size, 4));
+    buffers.push_back(as::const_buffer(&write_msg_type, 1));
+    // TODO: may not copy
+    buffers.push_back(as::const_buffer(write_serialized_msg.c_str(), write_body_size));
+
+    as::async_write(socket_, buffers, boost::bind(&TcpConnection::finalize, shared_from_this(), boost::asio::placeholders::error));
+}
+
+
 
 
 

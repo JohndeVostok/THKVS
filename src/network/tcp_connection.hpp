@@ -38,12 +38,19 @@ public:
 
     void handle_body(const boost::system::error_code& error);
 
-    void finalize();
+    void finalize(const boost::system::error_code& error);
+
+    bool connect(std::string& ipString, int port);
+
+    void write_message();
+
+
 private:
     TcpConnection(as::io_service& io_service);
     as::ip::address peerIp;
     as::ip::tcp::socket socket_;
     SerialzedMessage read_msg;
+    std::vector<as::const_buffer> buffers;
 };
 
 

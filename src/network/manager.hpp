@@ -12,6 +12,12 @@ namespace manager {
     extern MsgQueue<std::shared_ptr<Message> > recvQue;
     extern MsgQueue<std::shared_ptr<Message> > sendQue;
 
+    std::shared_ptr<Message> recv();
+
+    bool send(std::shared_ptr<Message> msg);
+
+    void get_writable_msg(std::shared_ptr<Message>& msg);
+
 }
 
 #endif //THKVS_MANAGER_HPP

@@ -17,4 +17,8 @@ namespace manager {
     bool send(std::shared_ptr<Message> msg) {
         sendQue.push(msg);
     }
+
+    void get_writable_msg(std::shared_ptr<Message>& msg) {
+        sendQue.pop(msg);
+    }
 }
