@@ -3,7 +3,7 @@
 #include <iostream>
 #include <fstream>
 #include <sstream>
-#include <unordered_set>
+#include <windows.h>
 
 Driver::Driver() {
 	ifstream fin("config");
@@ -112,8 +112,25 @@ int Driver::initSync(int id) {
 }
 
 void Driver::sendPut(string &key, string &value, Host &host, int id) {
+	bool flag = 0;
 	//send()
+	if (flag) {
+		mu.lock();
+		if (id == cid) {
+			tot++;
+		}
+		mu.unlock();
+		return;
+	}
 	//recv()
+	if (flag) {
+		mu.lock();
+		if (id == cid) {
+			tot++;
+		}
+		mu.unlock();
+		return;
+	}
 	mu.lock();
 	if (id == cid) {
 		tot++;
@@ -123,8 +140,25 @@ void Driver::sendPut(string &key, string &value, Host &host, int id) {
 }
 
 void Driver::sendGet(string &key, string &value, Host &host, int id) {
+	bool flag = 0;
 	//send()
+	if (flag) {
+		mu.lock();
+		if (id == cid) {
+			tot++;
+		}
+		mu.unlock();
+		return;
+	}
 	//recv()
+	if (flag) {
+		mu.lock();
+		if (id == cid) {
+			tot++;
+		}
+		mu.unlock();
+		return;
+	}
 	mu.lock();
 	if (id == cid) {
 		tot++;
