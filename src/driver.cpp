@@ -1,8 +1,9 @@
 #include "driver.h"
 #include "crc.hpp"
+#include <iostream>
 #include <fstream>
 #include <sstream>
-#include <unordered_set>
+#include <windows.h>
 
 Driver::Driver() {
 	ifstream fin("config");
@@ -12,13 +13,13 @@ Driver::Driver() {
 	}
 	for (int i = 0; i < hostList.size(); i++) {
 		auto &host = hostList[i];
-		ostringstream oss;
+		ostringstream buf;
 		string tmpstr;
 		unsigned nodehash;
 		for (int j = 0; j < (NODECOPY); j++) {
-			oss.str("");
-			oss << host.host << "#" << j;
-			tmpstr = oss.str();
+			buf.str("");
+			buf << host.host << "#" << j;
+			tmpstr = buf.str();
 			nodehash = hash(tmpstr);
 			nodeMap.emplace(nodehash, i);
 		}
@@ -32,21 +33,23 @@ unsigned Driver::hash(string &str) {
 	return getCRC(str);
 }
 
-void Driver::getServers(string &key, vector <int> &servers) {
-	servers.clear();
+int Driver::getHosts(string &key, vector <int> &hosts) {
+	hosts.clear();
+	if (hostList.size() < THKVS_N) {
+		return 1;
+	}
 	unsigned keyhash = hash(key);
-	printf("%u\n", keyhash);
 	auto iter = nodeMap.lower_bound(keyhash);
-	while (servers.size() < 3) {
-		printf("%u %d\n", iter->first, iter->second);
+	while (hosts.size() < 3) {
 		int flag = 0;
-		for (auto &t : servers) {
+		for (auto &t : hosts) {
 			if (t == iter->second) {
 				flag = 1;
 			}
 		}
 		if (!flag) {
-			servers.emplace_back(iter->second);
+			hosts.emplace_back(iter->second);
+			hostList[iter->second].count++;
 		}
 		if (iter == nodeMap.end()) {
 			iter = nodeMap.begin();
@@ -54,26 +57,118 @@ void Driver::getServers(string &key, vector <int> &servers) {
 			iter++;
 		}
 	}
+	return 0;
 }
 
-void Driver::put() {
-	vector <int> s;
-	string str = "sb";
-	getServers(str, s);
-	for (auto &t : s) {
-		printf("%d ", t);
+int Driver::put(string &key, string &value) {
+	unsigned id = opid++;
+	vector <int> hosts;
+	getHosts(key, hosts);
+	initSync(id);
+	for (int hostIdx : hosts) {
+		auto &host = hostList[hostIdx];
+		thread t(&Driver::sendPut, this, ref(key), ref(value), ref(host), id);
+		t.detach();
 	}
-	printf("\n");
-	str = "sc";
-	getServers(str, s);
-	for (auto &t : s) {
-		printf("%d ", t);
+	bool flag = true;
+	while (flag) {
+		mu.lock();
+		if (suc >= THKVS_W || tot - suc > THKVS_N - THKVS_W) {
+			flag = false;
+		}
+		mu.unlock();
 	}
-	printf("\n");
-	str = "sd";
-	getServers(str, s);
-	for (auto &t : s) {
-		printf("%d ", t);
+	return 0;
+}
+
+int Driver::get(string &key, string &value) {
+	unsigned id = opid++;
+	vector <int> hosts;
+	getHosts(key, hosts);
+	initSync(id);
+	for (int hostIdx : hosts) {
+		auto &host = hostList[hostIdx];
+		thread t(&Driver::sendGet, this, ref(key), ref(value), ref(host), id);
+		t.detach();
 	}
-	printf("\n");
+	bool flag = true;
+	while (flag) {
+		mu.lock();
+		if (suc >= THKVS_R || tot - suc > THKVS_N - THKVS_R) {
+			flag = false;
+		}
+		mu.unlock();
+	}
+	return 0;
+}
+
+int Driver::initSync(int id) {
+	mu.lock();
+	cid = id;
+	suc = 0;
+	tot = 0;
+	mu.unlock();
+	return 0;
+}
+
+void Driver::sendPut(string &key, string &value, Host &host, int id) {
+	bool flag = 0;
+	//send()
+	if (flag) {
+		mu.lock();
+		if (id == cid) {
+			tot++;
+		}
+		mu.unlock();
+		return;
+	}
+	//recv()
+	if (flag) {
+		mu.lock();
+		if (id == cid) {
+			tot++;
+		}
+		mu.unlock();
+		return;
+	}
+	mu.lock();
+	if (id == cid) {
+		tot++;
+		suc++;
+	}
+	mu.unlock();
+}
+
+void Driver::sendGet(string &key, string &value, Host &host, int id) {
+	bool flag = 0;
+	//send()
+	if (flag) {
+		mu.lock();
+		if (id == cid) {
+			tot++;
+		}
+		mu.unlock();
+		return;
+	}
+	//recv()
+	if (flag) {
+		mu.lock();
+		if (id == cid) {
+			tot++;
+		}
+		mu.unlock();
+		return;
+	}
+	mu.lock();
+	if (id == cid) {
+		tot++;
+		suc++;
+	}
+	mu.unlock();
+}
+
+void Driver::test() {
+	for (auto &host : hostList) {
+		cout << host.host << host.count << endl;
+	}
 }
