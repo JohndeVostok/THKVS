@@ -6,6 +6,8 @@
 #define THKVS_TCP_SERVER_HPP
 
 #include <boost/asio.hpp>
+#include "tcp_connection.hpp"
+#include <boost/bind.hpp>
 
 namespace as = boost::asio;
 
@@ -17,6 +19,8 @@ public:
     }
 private:
     void start_accept();
+    void handle_accept(std::shared_ptr<TcpConnection> conn,
+                       const boost::system::error_code& error);
     as::ip::tcp::acceptor acceptor_;
 };
 
