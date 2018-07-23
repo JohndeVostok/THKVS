@@ -3,3 +3,7 @@
 //
 
 #include "tcp_server.hpp"
+
+void TcpServer::start_accept() {
+
+}
