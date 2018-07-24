@@ -98,10 +98,10 @@ private:
 class Message {
 public:
     m_type type;
-    int ttl;
-    std::string from_ip;
-    Message(m_type _type, int _ttl, std::string _from_ip)
-            : type(_type), ttl(_ttl), from_ip(_from_ip) {}
+    int port;
+    std::string to_ip;
+    Message(m_type _type, std::string _to_ip, int _port)
+            : type(_type), port(_port), to_ip(_to_ip) {}
     Message() {}
     virtual ~Message() {}
 private:
@@ -109,8 +109,8 @@ private:
     template <class Archive>
     void serialize(Archive& ar, const unsigned int version) {
         ar & type;
-        ar & ttl;
-        ar & from_ip;
+        ar & port;
+        ar & to_ip;
     }
 
 };
@@ -120,8 +120,8 @@ public:
     std::string msg;
     TextMessage() {}
     TextMessage(std::string _msg): msg(_msg) {}
-    TextMessage(m_type _type, int _ttl, std::string _from_ip, std::string _msg)
-            : Message(_type, _ttl, _from_ip), msg(_msg) {}
+    TextMessage(m_type _type, std::string _to_ip, int _port,  std::string _msg)
+            : Message(_type, _to_ip, _port), msg(_msg) {}
 
 private:
     friend class boost::serialization::access;

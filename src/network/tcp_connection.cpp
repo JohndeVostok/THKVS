@@ -41,7 +41,7 @@ void TcpConnection::handle_body(const boost::system::error_code& error) {
     std::cout << "[DEBUG] started handle body" << std::endl;
     std::shared_ptr<Message> msgToRecv;
     std::istringstream istream(read_msg.body());
-    std::string tmp = std::string(read_msg.body());
+    std::cout << "[DEBUG] serialized message: " << read_msg.body() << std::endl;
     boost::archive::text_iarchive ia(istream);
     switch (read_msg.message_type()) {
         case m_text: {
@@ -59,27 +59,29 @@ void TcpConnection::handle_body(const boost::system::error_code& error) {
 }
 
 void TcpConnection::finalize(const boost::system::error_code& error) {
-    std::cout << boost::system::system_error(error).what() << std::endl;
-    if (!error) {
+    if (error) {
+        std::cout << boost::system::system_error(error).what() << std::endl;
+    }
+    else {
         boost::system::error_code ec;
         socket_.shutdown(as::ip::tcp::socket::shutdown_both, ec);
     }
 }
 
-bool TcpConnection::connect(std::string& ipString, int port) {
-    auto ip = as::ip::address::from_string(ipString);
-    as::ip::tcp::endpoint endpoint(ip, port);
-    boost::system::error_code error;
-    socket_.connect(endpoint, error);
-    if (!error) {
-        write_message();
-    }
-    return true;
-}
 
 void TcpConnection::write_message() {
+
     std::shared_ptr<Message> msgToSend;
     manager::get_writable_msg(msgToSend);
+
+    auto ip = as::ip::address::from_string(msgToSend->to_ip);
+    as::ip::tcp::endpoint endpoint(ip, msgToSend->port);
+    boost::system::error_code error;
+    socket_.connect(endpoint, error);
+    if (error) {
+        std::cout << boost::system::system_error(error).what() << std::endl;
+        return ;
+    }
 
     std::ostringstream archive_stream;
     boost::archive::text_oarchive archive(archive_stream);
@@ -100,10 +102,11 @@ void TcpConnection::write_message() {
 
     size_t write_body_size = archive_stream.str().length();
     char write_msg_type = (char)msgToSend->type;
-    std::string write_serialized_msg = std::string(archive_stream.str(), write_body_size);
+    std::string write_serialized_msg = archive_stream.str();
     buffers.push_back(as::const_buffer(&write_body_size, 4));
     buffers.push_back(as::const_buffer(&write_msg_type, 1));
     // TODO: may not copy
+    std::cout << "[DEBUG] serialized message: " << write_serialized_msg << std::endl;
     buffers.push_back(as::const_buffer(write_serialized_msg.c_str(), write_body_size));
 
     as::async_write(socket_, buffers, boost::bind(&TcpConnection::finalize, shared_from_this(), boost::asio::placeholders::error));

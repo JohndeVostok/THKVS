@@ -40,8 +40,6 @@ public:
 
     void finalize(const boost::system::error_code& error);
 
-    bool connect(std::string& ipString, int port);
-
     void write_message();
 
 
