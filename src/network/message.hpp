@@ -24,7 +24,8 @@ enum m_type {
     m_ack = 3,
     m_text = 4,
     m_share = 5,
-    m_plainshare = 6
+    m_plainshare = 6,
+    m_op = 7
     // TODO : more type
 };
 
@@ -133,6 +134,25 @@ private:
 };
 
 
+class OpMessage : public Message {
+public:
+    int op, id;
+    std::string key, value;
+    OpMessage() {}
+    OpMessage(m_type _type, std::string _to_ip, int _port,
+              int _op, int _id, std::string _key, std::string _value)
+            : Message(_type, _to_ip, _port), op(_op), id(_id), key(_key), value(_value) {}
 
+private:
+    friend class boost::serialization::access;
+    template <class Archive>
+    void serialize(Archive& ar, const unsigned int version) {
+        ar & boost::serialization::base_object<Message>(*this);
+        ar & op;
+        ar & id;
+        ar & key;
+        ar & value;
+    }
+};
 
 #endif //THKVS_MESSAGE_HPP
