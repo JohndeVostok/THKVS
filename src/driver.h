@@ -6,7 +6,7 @@
 #include <thread>
 #include <mutex>
 #include <map>
-#include <unorderd_map>
+#include <unordered_map>
 
 using namespace std;
 
@@ -16,6 +16,7 @@ private:
 	~Driver();
 	struct Host {
 		string host, ip;
+		int port;
 		int count = 0;
 	};
 
@@ -28,7 +29,7 @@ private:
 		int tot, suc;
 		int timestamp= -1;
 		string value;
-	}
+	};
 
 	const int NODECOPY = 256;
 	const int THKVS_N = 3; //replica number

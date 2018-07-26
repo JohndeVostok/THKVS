@@ -1,14 +1,14 @@
 #include "driver.h"
 #include "crc.hpp"
+#include "msg_handler.hpp"
 #include <iostream>
 #include <fstream>
 #include <sstream>
-#include <windows.h>
 
 Driver::Driver() {
 	ifstream fin("config");
 	Host tmp;
-	while (fin >> tmp.host >> tmp.ip) {
+	while (fin >> tmp.host >> tmp.ip >> tmp.port) {
 		hostList.emplace_back(tmp);
 	}
 	for (int i = 0; i < hostList.size(); i++) {
@@ -75,8 +75,7 @@ int Driver::put(string &key, string &value) {
 		entry.id = opid++;
 		entries.emplace(id, entry);
 		mu.unlock();
-		
-		//TODO : put
+		msgHandler::sendPut(id, host.ip, host.port, key, value);
 	}
 }
 
@@ -116,7 +115,7 @@ int Driver::get(string &key, string &value) {
 		entry.id = opid++;
 		entries.emplace(id, entry);
 		mu.unlock();
-		//TODO : get
+		msgHandler::sendGet(id, host.ip, host.port, key);
 	}
 }
 
