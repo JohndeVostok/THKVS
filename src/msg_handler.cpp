@@ -9,12 +9,14 @@ namespace msgHandler {
     void handleGet(std::shared_ptr<OpMessage>& opm) {
         int id = opm->id;
         std::string key = opm->key;
-
-        //TODO: data::get()
+        Data::getInstance()->get(id, key);
     }
 
     void handlePut(std::shared_ptr<OpMessage>& opm) {
-        //TODO: data::put();
+        int id = opm->id;
+        std::string key = opm->key;
+        std::string value = opm->value;
+        Data::getInstance()->put(id, key, value);
     }
 
     void handleGetRet(std::shared_ptr<OpRetMessage>& opm) {

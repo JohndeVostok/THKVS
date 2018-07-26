@@ -10,6 +10,12 @@ using namespace std;
 
 class Data {
 public:
+	Data(Data const&) = delete;
+	void operator = (Data const&) = delete;
+	static Data* getInstance()  {
+		static Data _inst;
+		return &_inst;
+	}
 	class KeyValue
 	{
 	public:
@@ -32,8 +38,7 @@ public:
 		long long time_stamp;
 	};
 
-	Data();
-	~Data();
+
 	void get(int id, string key);
 	void put(int id, string key, string value);
 	void get_return(int id, string status, string value, long long time_stamp);
@@ -44,12 +49,8 @@ private:
 	unordered_map<string, Value> umap;
 	MsgQueue<KeyValue> que;
 
-	Data(Data const&) = delete;
-	void operator = (Data const&) = delete;
-	static Data* getInstance()  {
-		static Data _inst;
-		return &_inst;
-	}
+	Data();
+	~Data();
 };
 
 #endif
