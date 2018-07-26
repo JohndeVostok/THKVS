@@ -25,6 +25,10 @@ namespace msgHandler {
     void sendPut(int id, std::string ip, int port, std::string& key, std::string& value);
 
     void sendGet(int id, std::string ip, int port, std::string& key);
+
+    void sendPutRet(int id, std::string ip, int port, int status);
+
+    void sendGetRet(int id, std::string ip, int port, int status, std::string value, long long time_stamp);
 }
 
 

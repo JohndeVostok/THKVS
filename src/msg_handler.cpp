@@ -92,11 +92,13 @@ namespace msgHandler {
         manager::send(std::make_shared<OpMessage>(opm));
     }
 
-    void sendPutRet(int id, std::string ip, int port) {
-
+    void sendPutRet(int id, std::string ip, int port, int status) {
+        OpRetMessage oprm(m_op, ip, port, m_putret, status);
+        manager::send(std::make_shared<OpRetMessage>(oprm));
     }
 
-    void sendGetRet(int id, std::string ip, int port) {
-
+    void sendGetRet(int id, std::string ip, int port, int status, std::string value, long long time_stamp) {
+        OpRetMessage oprm(m_op, ip, port, m_getret, id, status, value, time_stamp);
+        manager::send(std::make_shared<OpRetMessage>(oprm));
     }
 }

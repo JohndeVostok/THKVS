@@ -28,7 +28,7 @@ public:
 		{
 			op = _op;
 			ip = _ip;
-			port _port;
+			port = _port;
 			id = _id;
 			key = _key;
 			value = _value;
@@ -53,8 +53,8 @@ private:
 	unordered_map<string, Value> umap;
 	MsgQueue<KeyValue> que;
 
-	Data();
-	~Data();
+	Data() {};
+	~Data() {};
 };
 
 #endif

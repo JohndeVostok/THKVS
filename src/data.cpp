@@ -34,13 +34,13 @@ void Data::get(int id, string ip, int port, string key)
 
 void Data::get_return(int id, string ip, int port, int status, string value, long long time_stamp)
 {
-
+	msgHandler::sendGetRet(id, ip, port, status, value, time_stamp);
 	//printf("get_return id:%d status:%s value:%s time_stamp:%lld\n", id, status.c_str(), value.c_str(), time_stamp);
 	//return "get_return success";
 }
 void Data::put_return(int id, string ip, int port, int status)
 {
-
+	msgHandler::sendPutRet(id, ip, port, status);
 	//printf("put_return id:%d value:%s\n", id, status.c_str());
 	//return "put_return success";
 }
