@@ -75,6 +75,7 @@ int Driver::put(string &key, string &value) {
 		entry.id = opid++;
 		entries.emplace(id, entry);
 		mu.unlock();
+		
 		//TODO : put
 	}
 }
@@ -96,13 +97,13 @@ int Driver::putReturn(int id, int status) {
 	}
 	mu.unlock();
 	if (flag > 1) {
-		putFinish(id);
+		putFinish(id, flag - 2);
 	}
 	return 0;
 }
 
-int Driver::putFinish(int id) {
-	//TODO
+int Driver::putFinish(int id, int status) {
+	cout << id << status << endl;
 }
 
 int Driver::get(string &key, string &value) {
@@ -142,13 +143,13 @@ int Driver::getReturn(int id, int status, int timestamp, string &value) {
 	}
 	mu.unlock();
 	if (flag > 1) {
-		getFinish(id); // entry.timestamp. entry.valye;
+		getFinish(id, flag - 2, entry.value); // entry.timestamp. entry.value;
 	}
 	return 0;
 }
 
-int Driver::getFinish(int id) {
-	//TODO
+int Driver::getFinish(int id, int status, string &value) {
+	cout << id << status << value << endl;
 }
 
 void Driver::test() {
