@@ -29,11 +29,6 @@ Driver::Driver() {
 
 Driver::~Driver() {}
 
-Driver::getInstance() {
-	static Driver _inst;
-	return &_inst;
-}
-
 unsigned Driver::hash(string &str) {
 	return getCRC(str);
 }
@@ -70,6 +65,7 @@ int Driver::put(string &key, string &value) {
 	vector <int> hosts;
 	getHosts(key, hosts);
 	for (int hostIdx : hosts) {
+		Host& host = hostList[hostIdx];
 		SyncEntry entry;
 		mu.lock();
 		entry.id = opid++;
@@ -105,11 +101,12 @@ int Driver::putFinish(int id, int status) {
 	cout << id << status << endl;
 }
 
-int Driver::get(string &key, string &value) {
+int Driver::get(string &key) {
 	unsigned id = opid++;
 	vector <int> hosts;
 	getHosts(key, hosts);
 	for (int hostIdx : hosts) {
+		Host& host = hostList[hostIdx];
 		SyncEntry entry;
 		mu.lock();
 		entry.id = opid++;
@@ -121,6 +118,7 @@ int Driver::get(string &key, string &value) {
 
 int Driver::getReturn(int id, int status, int timestamp, string &value) {
 	int flag = 0;
+	string str;
 	mu.lock();
 	if (entries.find(id) != entries.end()) {
 		flag = 1;
@@ -137,12 +135,13 @@ int Driver::getReturn(int id, int status, int timestamp, string &value) {
 		}
 		if (entry.suc >= THKVS_R || entry.tot - entry.suc > THKVS_N - THKVS_R) {
 			entries.erase(id);
+			str = entry.value;
 			flag = 2 + status;
 		}
 	}
 	mu.unlock();
 	if (flag > 1) {
-		getFinish(id, flag - 2, entry.value); // entry.timestamp. entry.value;
+		getFinish(id, flag - 2, str); // entry.timestamp. entry.value;
 	}
 	return 0;
 }
@@ -156,3 +155,4 @@ void Driver::test() {
 		cout << host.host << host.count << endl;
 	}
 }
+

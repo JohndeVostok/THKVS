@@ -7,12 +7,16 @@
 #include <mutex>
 #include <map>
 #include <unordered_map>
+#include <iostream>
+#include <fstream>
+#include <sstream>
 
 using namespace std;
 
 class Driver {
 private:
 	Driver();
+
 	~Driver();
 	struct Host {
 		string host, ip;
@@ -51,13 +55,16 @@ private:
 public:
 	Driver(Driver const&) = delete;
 	void operator = (Driver const&) = delete;
-	static Driver* getInstance();
+	static Driver* getInstance()  {
+		static Driver _inst;
+		return &_inst;
+	}
 	int put(string &key, string &value);
 	int putReturn(int id, int status);
-	int putFinish(int id);
+	int putFinish(int id, int status);
 	int get(string &key);
 	int getReturn(int id, int status, int timestamp, string &value);
-	int getFinish(int id);
+	int getFinish(int id, int status, string &value);
 	void test();
 };
 
