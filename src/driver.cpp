@@ -63,6 +63,8 @@ int Driver::getHosts(string &key, vector <int> &hosts) {
 
 int Driver::put(string &key, string &value) {
 	SyncEntry entry;
+	entry.tot = 0;
+	entry.suc = 0;
 	mu.lock();
 	unsigned id = opid++;
 	entries.emplace(id, entry);
@@ -79,15 +81,18 @@ int Driver::put(string &key, string &value) {
 }
 
 int Driver::putReturn(int id, int status) {
-	int flag = 0;
+    std::cout << "[DEBUG DRIVER] Put Return id: " << id << " status: " << status << std::endl;
+
+    int flag = 0;
 	mu.lock();
-	if (entries.find(id) != entries.end()) {
+	if (entries.find(id) == entries.end()) {
 		flag = 1;
 	}
 	if (!flag) {
 		SyncEntry entry = entries[id];
 		entry.tot++;
 		entry.suc += status;
+        std::cout << "[DEBUG DRIVER] In putReturn: " << "tot: " << entry.tot << " suc: " << entry.suc << std::endl;
 		if (entry.suc >= THKVS_W || entry.tot - entry.suc > THKVS_N - THKVS_W) {
 			entries.erase(id);
 			flag = 2 + status;
@@ -101,11 +106,13 @@ int Driver::putReturn(int id, int status) {
 }
 
 int Driver::putFinish(int id, int status) {
-	cout << id << status << endl;
+	cout << "[DEBUG DRIVER] PutFinish " << id << " " << status << endl;
 }
 
 int Driver::get(string &key) {
 	SyncEntry entry;
+	entry.tot = 0;
+	entry.suc = 0;
 	mu.lock();
 	unsigned id = opid++;
 	entries.emplace(id, entry);
@@ -120,13 +127,14 @@ int Driver::get(string &key) {
 }
 
 int Driver::getReturn(int id, int status, long long timestamp, string &value) {
-    std::cout << "[DEBUG DRIVER] Get Return id: " << id << std::endl;
+    std::cout << "[DEBUG DRIVER] Get Return id: " << id << " status: " << status << "value: " << value << std::endl;
 	int flag = 0;
 	string str;
 	mu.lock();
-	if (entries.find(id) != entries.end()) {
+	if (entries.find(id) == entries.end()) {
 		flag = 1;
 	}
+	std::cout << "[DEBUG DRIVER] In getReturn: flag: " << flag << std::endl;
 	if (!flag) {
 		SyncEntry entry = entries[id];
 		entry.tot++;
@@ -137,7 +145,7 @@ int Driver::getReturn(int id, int status, long long timestamp, string &value) {
 				entry.value = value;
 			}
 		}
-        std::cout << "[DEBUG DRIVER] " << "tot: " << entry.tot << " suc: " << entry.suc << std::endl;
+        std::cout << "[DEBUG DRIVER] In getReturn: " << "tot: " << entry.tot << " suc: " << entry.suc << std::endl;
 		if (entry.suc >= THKVS_R || entry.tot - entry.suc > THKVS_N - THKVS_R) {
 			entries.erase(id);
 			str = entry.value;
@@ -154,7 +162,7 @@ int Driver::getReturn(int id, int status, long long timestamp, string &value) {
 }
 
 int Driver::getFinish(int id, int status, string &value) {
-	cout << id << status << value << endl;
+	cout << "[DEBUG DRIVER] GetFinish " << id << " " << status << " " << value << endl;
 }
 
 void Driver::test() {

@@ -177,7 +177,7 @@ public:
     OpRetMessage() {}
     OpRetMessage(m_type _type, std::string _to_ip, int _port, m_op_type _op, int _id,
                  int _status = 0, std::string _value = "", long long _timestamp = 0)
-                         : Message(_type, _to_ip, _port), op(_op), id(_id), value(_value) {}
+                         : Message(_type, _to_ip, _port), op(_op), status(_status), id(_id), value(_value), timestamp(_timestamp) {}
 
 private:
     friend class boost::serialization::access;

@@ -30,7 +30,7 @@ private:
 
 	struct SyncEntry {
 		int id;
-		int tot, suc;
+		int tot = 0, suc = 0;
 		long long timestamp= -1;
 		string value;
 	};

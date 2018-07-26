@@ -28,6 +28,7 @@ namespace msgHandler {
         int status = opm->status;
         long long timestamp = opm->timestamp;
         std::string value = opm->value;
+        std::cout << "[DEBUG Handler] After Received GetRet status: " << status << std::endl;
         Driver::getInstance()->getReturn(id, status, timestamp, value);
         return ;
     }
@@ -35,6 +36,7 @@ namespace msgHandler {
     void handlePutRet(std::shared_ptr<OpRetMessage>& opm) {
         int id = opm->id;
         int status = opm->status;
+        std::cout << "[DEBUG Handler] After Received PutRet status: " << status << std::endl;
         Driver::getInstance()->putReturn(id, status);
         return ;
     }
@@ -93,11 +95,13 @@ namespace msgHandler {
     }
 
     void sendPutRet(int id, std::string ip, int port, int status) {
+        std::cout << "[DEBUG Handler] Before sendPutRet status: " << status << std::endl;
         OpRetMessage oprm(m_opret, ip, port, m_putret, status);
         manager::send(std::make_shared<OpRetMessage>(oprm));
     }
 
     void sendGetRet(int id, std::string ip, int port, int status, std::string value, long long time_stamp) {
+        std::cout << "[DEBUG Handler] Before sendGetRet status: " << status << std::endl;
         OpRetMessage oprm(m_opret, ip, port, m_getret, id, status, value, time_stamp);
         manager::send(std::make_shared<OpRetMessage>(oprm));
     }
