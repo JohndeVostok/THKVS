@@ -25,7 +25,8 @@ enum m_type {
     m_text = 4,
     m_share = 5,
     m_plainshare = 6,
-    m_op = 7
+    m_op = 7,
+    m_opret = 8
     // TODO : more type
 };
 
@@ -144,12 +145,12 @@ private:
 class OpMessage : public Message {
 public:
     m_op_type op;
-    int id, timestamp;
+    int id;
     std::string key, value;
     OpMessage() {}
     OpMessage(m_type _type, std::string _to_ip, int _port,
-              m_op_type _op, int _id, std::string _key, std::string _value, int _timestamp = 0)
-            : Message(_type, _to_ip, _port), op(_op), id(_id), key(_key), value(_value), timestamp(_timestamp) {}
+              m_op_type _op, int _id, std::string _key, std::string _value = "")
+            : Message(_type, _to_ip, _port), op(_op), id(_id), key(_key), value(_value) {}
 
 private:
     friend class boost::serialization::access;
@@ -159,6 +160,29 @@ private:
         ar & op;
         ar & id;
         ar & key;
+        ar & value;
+    }
+};
+
+class OpRetMessage : public Message {
+public:
+    m_op_type op;
+    int id, timestamp, status;
+    std::string value;
+    OpRetMessage() {}
+    OpRetMessage(m_type _type, std::string _to_ip, int _port, m_op_type _op, int _id,
+                 std::string _value = "", int _status = 0, int _timestamp = 0)
+                         : Message(_type, _to_ip, _port), op(_op), id(_id), value(_value) {}
+
+private:
+    friend class boost::serialization::access;
+    template <class Archive>
+    void serialize(Archive& ar, const unsigned int version) {
+        ar & boost::serialization::base_object<Message>(*this);
+        ar & op;
+        ar & id;
+        ar & timestamp;
+        ar & status;
         ar & value;
     }
 };
