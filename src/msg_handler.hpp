@@ -11,73 +11,20 @@
 
 namespace msgHandler {
 
-    void handleGet(std::shared_ptr<OpMessage>& opm) {
-        //TODO: data::get()
-    }
+    void handleGet(std::shared_ptr<OpMessage>& opm);
 
-    void handlePut(std::shared_ptr<OpMessage>& opm) {
-        //TODO: data::put();
-    }
+    void handlePut(std::shared_ptr<OpMessage>& opm);
 
-    void handleGetRet(std::shared_ptr<OpRetMessage>& opm) {
-
-        //TODO: driver::getret();
-    }
-
-    void handlePutRet(std::shared_ptr<OpRetMessage>& opm) {
-        //TODO: driver::putret();
-    }
+    void handleGetRet(std::shared_ptr<OpRetMessage>& opm);
+    void handlePutRet(std::shared_ptr<OpRetMessage>& opm);
 
     // while loop recv msg
-    void run() {
-        std::shared_ptr<Message> m;
-        while (true) {
-            m = manager::recv();
-            switch (m->type) {
-                case m_op: {
-                    std::shared_ptr<OpMessage> opm = std::dynamic_pointer_cast<OpMessage>(m);
-                    switch (opm->op) {
-                        case m_get: {
-                            handleGet(opm);
-                            break;
-                        }
-                        case m_put: {
-                            handlePut(opm);
-                            break;
-                        }
-                    }
-                    break;
-                }
-                case m_opret: {
-                    std::shared_ptr<OpRetMessage> oprm = std::dynamic_pointer_cast<OpRetMessage>(m);
-                    switch (oprm->op) {
-                        case m_getret: {
-                            break;
-                        }
-                        case m_putret: {
-                            break;
-                        }
-                    }
-                    break;
-                }
-                default: {
-                    break;
-                }
-            }
-        }
-    }
+    void run();
 
 
-    void sendPut(int id, std::string ip, int port, std::string& key, std::string& value) {
-        OpMessage opm(m_op, ip, port, m_put, id, key, value);
-        manager::send(std::make_shared<OpMessage>(opm));
-        return ;
-    }
+    void sendPut(int id, std::string ip, int port, std::string& key, std::string& value);
 
-    void sendGet(int id, std::string ip, int port, std::string& key) {
-        OpMessage opm(m_op, ip, port, m_get, id, key);
-        manager::send(std::make_shared<OpMessage>(opm));
-    }
+    void sendGet(int id, std::string ip, int port, std::string& key);
 }
 
 
