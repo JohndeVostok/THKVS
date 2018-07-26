@@ -45,8 +45,8 @@ public:
 
 	void get(int id, string ip, int port, string key);
 	void put(int id, string ip, int port, string key, string value);
-	void get_return(int id, string ip, int port, string status, string value, long long time_stamp);
-	void put_return(int id, string ip, int port, string status);
+	void get_return(int id, string ip, int port, int status, string value, long long time_stamp);
+	void put_return(int id, string ip, int port, int status);
 	void run();
 
 private:
