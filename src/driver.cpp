@@ -91,7 +91,7 @@ int Driver::putReturn(int id, int status) {
 	if (!flag) {
 		SyncEntry entry = entries[id];
 		entry.tot++;
-		entry.suc += status;
+		entry.suc += status ^ 1;
         std::cout << "[DEBUG DRIVER] In putReturn: " << "tot: " << entry.tot << " suc: " << entry.suc << std::endl;
 		if (entry.suc >= THKVS_W || entry.tot - entry.suc > THKVS_N - THKVS_W) {
 			entries.erase(id);
@@ -138,7 +138,7 @@ int Driver::getReturn(int id, int status, long long timestamp, string &value) {
 	if (!flag) {
 		SyncEntry entry = entries[id];
 		entry.tot++;
-		entry.suc += status;
+		entry.suc += status ^ 1;
 		if (!status) {
 			if (timestamp > entry.timestamp) {
 				entry.timestamp = timestamp;
