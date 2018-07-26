@@ -44,6 +44,7 @@ private:
 	map <unsigned, int> nodeMap;
 	unordered_map <int, SyncEntry> entries;
 	vector <Host> hostList;
+	Host localhost;
 
 	//Sync
 	unsigned opid = 0;

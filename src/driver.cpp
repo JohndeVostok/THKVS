@@ -8,6 +8,7 @@
 Driver::Driver() {
 	ifstream fin("config");
 	Host tmp;
+	fin >> localhost.host >> localhost.ip >> localhost.port;
 	while (fin >> tmp.host >> tmp.ip >> tmp.port) {
 		hostList.emplace_back(tmp);
 	}
@@ -71,7 +72,7 @@ int Driver::put(string &key, string &value) {
 		entry.id = opid++;
 		entries.emplace(id, entry);
 		mu.unlock();
-		msgHandler::sendPut(id, host.ip, host.port, key, value);
+		msgHandler::sendPut(id, localhost.ip, localhost.port, host.ip, host.port, key, value);
 	}
 }
 
@@ -112,7 +113,7 @@ int Driver::get(string &key) {
 		entry.id = opid++;
 		entries.emplace(id, entry);
 		mu.unlock();
-		msgHandler::sendGet(id, host.ip, host.port, key);
+		msgHandler::sendGet(id, localhost.ip, localhost.port, host.ip, host.port, key);
 	}
 }
 
