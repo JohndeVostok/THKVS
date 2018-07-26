@@ -6,11 +6,14 @@
 #include <thread>
 #include <mutex>
 #include <map>
+#include <unorderd_map>
 
 using namespace std;
 
 class Driver {
 private:
+	Driver();
+	~Driver();
 	struct Host {
 		string host, ip;
 		int count = 0;
@@ -20,31 +23,40 @@ private:
 		string hostId;
 	};
 
+	struct SyncEntry {
+		int id;
+		int tot, suc;
+		int timestamp= -1;
+		string value;
+	}
+
 	const int NODECOPY = 256;
-	const int HASHBASE = 31;
 	const int THKVS_N = 3; //replica number
 	const int THKVS_R = 2; //read number
 	const int THKVS_W = 2; //write number
 	const int THKVS_TIMEOUT = 300;
 
 	map <unsigned, int> nodeMap;
+	unordered_map <int, SyncEntry> entries;
 	vector <Host> hostList;
 
-	//sync
-	unsigned opid = 0, cid, tot, suc;
+	//Sync
+	unsigned opid = 0;
 	mutex mu;
-	
 
 	unsigned hash(string &str);
 	int getHosts(string &key, vector <int> &hosts);
-	int initSync(int id);
-	void sendPut(string &key, string &value, Host &host, int id);
-	void sendGet(string &key, string &value, Host &host, int id);
+
 public:
-	Driver();
-	~Driver();
+	Driver(Driver const&) = delete;
+	void operator = (Driver const&) = delete;
+	static Driver* getInstance();
 	int put(string &key, string &value);
-	int get(string &key, string &value);
+	int putReturn(int id, int status);
+	int putFinish(int id);
+	int get(string &key);
+	int getReturn(int id, int status, int timestamp, string &value);
+	int getFinish(int id);
 	void test();
 };
 

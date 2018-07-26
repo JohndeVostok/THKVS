@@ -29,6 +29,11 @@ Driver::Driver() {
 
 Driver::~Driver() {}
 
+Driver::getInstance() {
+	static Driver _inst;
+	return &_inst;
+}
+
 unsigned Driver::hash(string &str) {
 	return getCRC(str);
 }
@@ -64,107 +69,86 @@ int Driver::put(string &key, string &value) {
 	unsigned id = opid++;
 	vector <int> hosts;
 	getHosts(key, hosts);
-	initSync(id);
 	for (int hostIdx : hosts) {
-		auto &host = hostList[hostIdx];
-		thread t(&Driver::sendPut, this, ref(key), ref(value), ref(host), id);
-		t.detach();
-	}
-	bool flag = true;
-	while (flag) {
+		SyncEntry entry;
 		mu.lock();
-		if (suc >= THKVS_W || tot - suc > THKVS_N - THKVS_W) {
-			flag = false;
-		}
+		entry.id = opid++;
+		entries.emplace(id, entry);
 		mu.unlock();
+		//TODO : put
+	}
+}
+
+int Driver::putReturn(int id, int status) {
+	int flag = 0;
+	mu.lock();
+	if (entries.find(id) != entries.end()) {
+		flag = 1;
+	}
+	if (!flag) {
+		SyncEntry entry = entries[id];
+		entry.tot++;
+		entry.suc += status;
+		if (entry.suc >= THKVS_W || entry.tot - entry.suc > THKVS_N - THKVS_W) {
+			entries.erase(id);
+			flag = 2 + status;
+		}
+	}
+	mu.unlock();
+	if (flag > 1) {
+		putFinish(id);
 	}
 	return 0;
+}
+
+int Driver::putFinish(int id) {
+	//TODO
 }
 
 int Driver::get(string &key, string &value) {
 	unsigned id = opid++;
 	vector <int> hosts;
 	getHosts(key, hosts);
-	initSync(id);
 	for (int hostIdx : hosts) {
-		auto &host = hostList[hostIdx];
-		thread t(&Driver::sendGet, this, ref(key), ref(value), ref(host), id);
-		t.detach();
-	}
-	bool flag = true;
-	while (flag) {
+		SyncEntry entry;
 		mu.lock();
-		if (suc >= THKVS_R || tot - suc > THKVS_N - THKVS_R) {
-			flag = false;
-		}
+		entry.id = opid++;
+		entries.emplace(id, entry);
 		mu.unlock();
+		//TODO : get
+	}
+}
+
+int Driver::getReturn(int id, int status, int timestamp, string &value) {
+	int flag = 0;
+	mu.lock();
+	if (entries.find(id) != entries.end()) {
+		flag = 1;
+	}
+	if (!flag) {
+		SyncEntry entry = entries[id];
+		entry.tot++;
+		entry.suc += status;
+		if (!status) {
+			if (timestamp > entry.timestamp) {
+				entry.timestamp = timestamp;
+				entry.value = value;
+			}
+		}
+		if (entry.suc >= THKVS_R || entry.tot - entry.suc > THKVS_N - THKVS_R) {
+			entries.erase(id);
+			flag = 2 + status;
+		}
+	}
+	mu.unlock();
+	if (flag > 1) {
+		getFinish(id); // entry.timestamp. entry.valye;
 	}
 	return 0;
 }
 
-int Driver::initSync(int id) {
-	mu.lock();
-	cid = id;
-	suc = 0;
-	tot = 0;
-	mu.unlock();
-	return 0;
-}
-
-void Driver::sendPut(string &key, string &value, Host &host, int id) {
-	bool flag = 0;
-	//send()
-	if (flag) {
-		mu.lock();
-		if (id == cid) {
-			tot++;
-		}
-		mu.unlock();
-		return;
-	}
-	//recv()
-	if (flag) {
-		mu.lock();
-		if (id == cid) {
-			tot++;
-		}
-		mu.unlock();
-		return;
-	}
-	mu.lock();
-	if (id == cid) {
-		tot++;
-		suc++;
-	}
-	mu.unlock();
-}
-
-void Driver::sendGet(string &key, string &value, Host &host, int id) {
-	bool flag = 0;
-	//send()
-	if (flag) {
-		mu.lock();
-		if (id == cid) {
-			tot++;
-		}
-		mu.unlock();
-		return;
-	}
-	//recv()
-	if (flag) {
-		mu.lock();
-		if (id == cid) {
-			tot++;
-		}
-		mu.unlock();
-		return;
-	}
-	mu.lock();
-	if (id == cid) {
-		tot++;
-		suc++;
-	}
-	mu.unlock();
+int Driver::getFinish(int id) {
+	//TODO
 }
 
 void Driver::test() {
