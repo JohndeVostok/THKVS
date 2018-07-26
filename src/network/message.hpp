@@ -29,6 +29,13 @@ enum m_type {
     // TODO : more type
 };
 
+enum m_op_type {
+    m_put = 1,
+    m_putret = 2,
+    m_get = 3,
+    m_getret = 4
+};
+
 class SerialzedMessage {
 public:
 
@@ -136,12 +143,13 @@ private:
 
 class OpMessage : public Message {
 public:
-    int op, id;
+    m_op_type op;
+    int id, timestamp;
     std::string key, value;
     OpMessage() {}
     OpMessage(m_type _type, std::string _to_ip, int _port,
-              int _op, int _id, std::string _key, std::string _value)
-            : Message(_type, _to_ip, _port), op(_op), id(_id), key(_key), value(_value) {}
+              m_op_type _op, int _id, std::string _key, std::string _value, int _timestamp = 0)
+            : Message(_type, _to_ip, _port), op(_op), id(_id), key(_key), value(_value), timestamp(_timestamp) {}
 
 private:
     friend class boost::serialization::access;
