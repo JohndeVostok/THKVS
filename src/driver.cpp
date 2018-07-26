@@ -62,20 +62,17 @@ int Driver::getHosts(string &key, vector <int> &hosts) {
 }
 
 int Driver::put(string &key, string &value) {
-
+	SyncEntry entry;
+	mu.lock();
 	unsigned id = opid++;
+	entries.emplace(id, entry);
+	mu.unlock();
 	vector <int> hosts;
 	getHosts(key, hosts);
 
 	for (int hostIdx : hosts) {
 		Host& host = hostList[hostIdx];
-		SyncEntry entry;
 		std::cout << "[DEBUG] " << host.ip << " " <<  host.port << " " << key << " " << value << std::endl;
-		mu.lock();
-		entry.id = opid++;
-		entries.emplace(id, entry);
-		mu.unlock();
-
 		msgHandler::sendPut(id, localhost.ip, localhost.port, host.ip, host.port, key, value);
 	}
 	std::cout << "[DEBUG] ended of put" << std::endl;
@@ -108,17 +105,16 @@ int Driver::putFinish(int id, int status) {
 }
 
 int Driver::get(string &key) {
+	SyncEntry entry;
+	mu.lock();
 	unsigned id = opid++;
+	entries.emplace(id, entry);
+	mu.unlock();
 	std::cout << "[DEBUG DRIVER] Before Get id: " << id << std::endl;
 	vector <int> hosts;
 	getHosts(key, hosts);
 	for (int hostIdx : hosts) {
 		Host& host = hostList[hostIdx];
-		SyncEntry entry;
-		mu.lock();
-		entry.id = opid++;
-		entries.emplace(id, entry);
-		mu.unlock();
 		msgHandler::sendGet(id, localhost.ip, localhost.port, host.ip, host.port, key);
 	}
 }
