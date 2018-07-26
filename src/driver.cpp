@@ -62,18 +62,23 @@ int Driver::getHosts(string &key, vector <int> &hosts) {
 }
 
 int Driver::put(string &key, string &value) {
+
 	unsigned id = opid++;
 	vector <int> hosts;
 	getHosts(key, hosts);
+
 	for (int hostIdx : hosts) {
 		Host& host = hostList[hostIdx];
 		SyncEntry entry;
+		std::cout << "[DEBUG] " << host.ip << " " <<  host.port << " " << key << " " << value << std::endl;
 		mu.lock();
 		entry.id = opid++;
 		entries.emplace(id, entry);
 		mu.unlock();
+
 		msgHandler::sendPut(id, localhost.ip, localhost.port, host.ip, host.port, key, value);
 	}
+	std::cout << "[DEBUG] ended of put" << std::endl;
 }
 
 int Driver::putReturn(int id, int status) {
@@ -104,6 +109,7 @@ int Driver::putFinish(int id, int status) {
 
 int Driver::get(string &key) {
 	unsigned id = opid++;
+	std::cout << "[DEBUG DRIVER] Before Get id: " << id << std::endl;
 	vector <int> hosts;
 	getHosts(key, hosts);
 	for (int hostIdx : hosts) {
@@ -118,6 +124,7 @@ int Driver::get(string &key) {
 }
 
 int Driver::getReturn(int id, int status, long long timestamp, string &value) {
+    std::cout << "[DEBUG DRIVER] Get Return id: " << id << std::endl;
 	int flag = 0;
 	string str;
 	mu.lock();
@@ -134,14 +141,17 @@ int Driver::getReturn(int id, int status, long long timestamp, string &value) {
 				entry.value = value;
 			}
 		}
+        std::cout << "[DEBUG DRIVER] " << "tot: " << entry.tot << " suc: " << entry.suc << std::endl;
 		if (entry.suc >= THKVS_R || entry.tot - entry.suc > THKVS_N - THKVS_R) {
 			entries.erase(id);
 			str = entry.value;
 			flag = 2 + status;
 		}
 	}
+
 	mu.unlock();
-	if (flag > 1) {
+
+    if (flag > 1) {
 		getFinish(id, flag - 2, str); // entry.timestamp. entry.value;
 	}
 	return 0;

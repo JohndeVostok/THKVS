@@ -22,9 +22,9 @@ namespace msgHandler {
     void run();
 
 
-    void sendPut(int id, std::string ip, int port, std::string& key, std::string& value);
+    void sendPut(int id, std::string localip, int localport, std::string ip, int port, std::string& key, std::string& value);
 
-    void sendGet(int id, std::string ip, int port, std::string& key);
+    void sendGet(int id, std::string localip, int localport, std::string ip, int port, std::string& key);
 
     void sendPutRet(int id, std::string ip, int port, int status);
 

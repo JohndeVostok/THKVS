@@ -147,10 +147,12 @@ public:
     m_op_type op;
     int id;
     std::string key, value;
+    std::string srcip;
+    int srcport;
     OpMessage() {}
-    OpMessage(m_type _type, std::string _to_ip, int _port,
+    OpMessage(m_type _type, std::string _to_ip, int _port, std::string _srcip, int _srcport,
               m_op_type _op, int _id, std::string _key, std::string _value = "")
-            : Message(_type, _to_ip, _port), op(_op), id(_id), key(_key), value(_value) {}
+            : Message(_type, _to_ip, _port), srcip(_srcip), srcport(_srcport), op(_op), id(_id), key(_key), value(_value) {}
 
 private:
     friend class boost::serialization::access;
@@ -161,6 +163,8 @@ private:
         ar & id;
         ar & key;
         ar & value;
+        ar & srcip;
+        ar & srcport;
     }
 };
 

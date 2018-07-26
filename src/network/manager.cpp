@@ -15,6 +15,7 @@ namespace manager {
     }
 
     bool send(std::shared_ptr<Message> msg) {
+        std::cout << "[DEBUG] called send" << std::endl;
         sendQue.push(msg);
     }
 

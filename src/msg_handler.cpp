@@ -9,8 +9,8 @@ namespace msgHandler {
     void handleGet(std::shared_ptr<OpMessage>& opm) {
         int id = opm->id;
         std::string key = opm->key;
-        std::string ip = opm->to_ip;
-        int port = opm->port;
+        std::string ip = opm->srcip;
+        int port = opm->srcport;
         Data::getInstance()->get(id,  ip, port, key);
     }
 
@@ -18,8 +18,8 @@ namespace msgHandler {
         int id = opm->id;
         std::string key = opm->key;
         std::string value = opm->value;
-        std::string ip = opm->to_ip;
-        int port = opm->port;
+        std::string ip = opm->srcip;
+        int port = opm->srcport;
         Data::getInstance()->put(id, ip, port, key, value);
     }
 
@@ -81,24 +81,24 @@ namespace msgHandler {
     }
 
 
-    void sendPut(int id, std::string ip, int port, std::string& key, std::string& value) {
-        OpMessage opm(m_op, ip, port, m_put, id, key, value);
+    void sendPut(int id, std::string localip, int localport, std::string ip, int port, std::string& key, std::string& value) {
+        OpMessage opm(m_op, ip, port, localip, localport, m_put, id, key, value);
         manager::send(std::make_shared<OpMessage>(opm));
         return ;
     }
 
-    void sendGet(int id, std::string ip, int port, std::string& key) {
-        OpMessage opm(m_op, ip, port, m_get, id, key);
+    void sendGet(int id, std::string localip, int localport, std::string ip, int port, std::string& key) {
+        OpMessage opm(m_op, ip, port, localip, localport, m_get, id, key);
         manager::send(std::make_shared<OpMessage>(opm));
     }
 
     void sendPutRet(int id, std::string ip, int port, int status) {
-        OpRetMessage oprm(m_op, ip, port, m_putret, status);
+        OpRetMessage oprm(m_opret, ip, port, m_putret, status);
         manager::send(std::make_shared<OpRetMessage>(oprm));
     }
 
     void sendGetRet(int id, std::string ip, int port, int status, std::string value, long long time_stamp) {
-        OpRetMessage oprm(m_op, ip, port, m_getret, id, status, value, time_stamp);
+        OpRetMessage oprm(m_opret, ip, port, m_getret, id, status, value, time_stamp);
         manager::send(std::make_shared<OpRetMessage>(oprm));
     }
 }

@@ -3,6 +3,9 @@
 #include "src/network/manager.hpp"
 #include "src/network/tcp_connection.hpp"
 #include <thread>
+#include "src/msg_handler.hpp"
+#include "src/data.h"
+#include "src/driver.h"
 namespace as = boost::asio;
 
 
@@ -15,8 +18,16 @@ void startIO(std::shared_ptr<as::io_service> io_service) {
     }
 }
 
+void send_thread(std::shared_ptr<as::io_service>& io_service) {
+    while (true) {
+        auto conn = TcpConnection::create(*io_service);
+        conn->write_message();
+    }
+}
+
 int main() {
     std::cout << "Hello, World!" << std::endl;
+
 
     std::shared_ptr<as::io_service> io_service(new as::io_service);
     //TcpServer server(*io_service);
@@ -25,6 +36,33 @@ int main() {
     std::cin >> portNum;
     server = new TcpServer(*io_service, portNum);
     auto thread_server = std::thread(&startIO, std::ref(io_service));
+    auto thread_write = std::thread(&send_thread, std::ref(io_service));
+    auto thread_handler = std::thread(&msgHandler::run);
+    auto thread_data = std::thread(&Data::run, Data::getInstance());
+    thread_server.detach();
+    thread_handler.detach();
+    thread_data.detach();
+    thread_write.detach();
 
-    return 0;
+    while (true) {
+        std::string op, key, value;
+        std::cin >> op;
+        if (op == "put") {
+            std::cin >> key >> value;
+            Driver::getInstance()->put(key, value);
+        } else {
+            std::cin >> key;
+            Driver::getInstance()->get(key);
+        }
+    }
+    std::string key = "sb", value = "caonima";
+    Driver::getInstance()->put(key, value);
+    Driver::getInstance()->get(key);
+
+    /*
+    test ptest;
+    auto thread_test = std::thread(&test::run, &ptest);
+    thread_test.join();
+    */
+     return 0;
 }
