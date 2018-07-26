@@ -260,3 +260,6 @@ CTestTestfile.cmake
 *.exe
 *.out
 *.gch
+
+#build
+build/*
