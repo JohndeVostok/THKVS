@@ -20,11 +20,15 @@ public:
 	{
 	public:
 		int id, op;
+		string ip;
+		int port;
 		string key, value;
 		KeyValue();
-		KeyValue(int _id, string _key, string _value, int _op)
+		KeyValue(int _id, string _ip, int _port, string _key, string _value, int _op)
 		{
 			op = _op;
+			ip = _ip;
+			port _port;
 			id = _id;
 			key = _key;
 			value = _value;
@@ -39,10 +43,10 @@ public:
 	};
 
 
-	void get(int id, string key);
-	void put(int id, string key, string value);
-	void get_return(int id, string status, string value, long long time_stamp);
-	void put_return(int id, string value);
+	void get(int id, string ip, int port, string key);
+	void put(int id, string ip, int port, string key, string value);
+	void get_return(int id, string ip, int port, string status, string value, long long time_stamp);
+	void put_return(int id, string ip, int port, string status);
 	void run();
 
 private:
