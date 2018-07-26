@@ -1,40 +1,11 @@
-#include <string>
 #include "data.h"
-#include "network/msg_queue.hpp"
 #include "msg_handler.hpp"
-#include <unordered_map>
+#include <string>
 #include <cstdio>
 #include <time.h>
-#include <queue>
 #include <sys/time.h>    // for gettimeofday()
 
 using namespace std;
-
-class KeyValue
-{
-public:
-	int id, op;
-	string key, value;
-	KeyValue();
-	KeyValue(int _id, string _key, string _value, int _op)
-	{
-		op = _op;
-		id = _id;
-		key = _key;
-		value = _value;
-	}
-};
-
-struct Value
-{
-	int id;
-	string value;
-	long long time_stamp;
-};
-
-unordered_map<string, Value> umap;
-
-MsgQueue<KeyValue> que;
 
 long long getTime()
 {
@@ -108,4 +79,3 @@ void Data::run()
 		}
 	}
 }
-
