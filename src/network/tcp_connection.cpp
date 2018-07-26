@@ -56,6 +56,12 @@ void TcpConnection::handle_body(const boost::system::error_code& error) {
             msgToRecv = std::make_shared<OpMessage>(opM);
             break;
         }
+        case m_opret: {
+            OpRetMessage oprM;
+            ia >> oprM;
+            msgToRecv = std::make_shared<OpRetMessage>(oprM);
+            break;
+        }
         default: {
             break;
         }
@@ -94,6 +100,7 @@ void TcpConnection::write_message() {
 
     std::shared_ptr<TextMessage> tm;
     std::shared_ptr<OpMessage> opm;
+    std::shared_ptr<OpRetMessage> oprm;
     switch (msgToSend->type) {
         case m_text: {
             tm = std::dynamic_pointer_cast<TextMessage>(msgToSend);
@@ -103,6 +110,11 @@ void TcpConnection::write_message() {
         case m_op : {
             opm = std::dynamic_pointer_cast<OpMessage>(msgToSend);
             archive << (*opm);
+            break;
+        }
+        case m_opret: {
+            oprm = std::dynamic_pointer_cast<OpRetMessage>(msgToSend);
+            archive << (*oprm);
             break;
         }
         default: {
