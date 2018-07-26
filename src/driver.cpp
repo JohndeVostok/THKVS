@@ -116,7 +116,7 @@ int Driver::get(string &key) {
 	}
 }
 
-int Driver::getReturn(int id, int status, int timestamp, string &value) {
+int Driver::getReturn(int id, int status, long long timestamp, string &value) {
 	int flag = 0;
 	string str;
 	mu.lock();

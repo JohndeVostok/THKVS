@@ -4,9 +4,12 @@
 
 #include "msg_handler.hpp"
 #include "driver.h"
-
+#include "data.h"
 namespace msgHandler {
     void handleGet(std::shared_ptr<OpMessage>& opm) {
+        int id = opm->id;
+        std::string key = opm->key;
+
         //TODO: data::get()
     }
 
@@ -17,7 +20,7 @@ namespace msgHandler {
     void handleGetRet(std::shared_ptr<OpRetMessage>& opm) {
         int id = opm->id;
         int status = opm->status;
-        int timestamp = opm->timestamp;
+        long long timestamp = opm->timestamp;
         std::string value = opm->value;
         Driver::getInstance()->getReturn(id, status, timestamp, value);
         return ;

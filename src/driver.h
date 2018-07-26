@@ -31,7 +31,7 @@ private:
 	struct SyncEntry {
 		int id;
 		int tot, suc;
-		int timestamp= -1;
+		long long timestamp= -1;
 		string value;
 	};
 
@@ -63,7 +63,7 @@ public:
 	int putReturn(int id, int status);
 	int putFinish(int id, int status);
 	int get(string &key);
-	int getReturn(int id, int status, int timestamp, string &value);
+	int getReturn(int id, int status, long long timestamp, string &value);
 	int getFinish(int id, int status, string &value);
 	void test();
 };

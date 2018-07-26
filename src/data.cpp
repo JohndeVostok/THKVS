@@ -1,6 +1,7 @@
 #include <string>
 #include "data.h"
-#include "msg_queue.hpp"
+#include "network/msg_queue.hpp"
+#include "msg_handler.hpp"
 #include <unordered_map>
 #include <cstdio>
 #include <time.h>
@@ -60,15 +61,17 @@ void Data::get(int id, string key)
 	return;
 }
 
-string Data::get_return(int id, string status, string value, long long time_stamp)
+void Data::get_return(int id, string status, string value, long long time_stamp)
 {
-	printf("get_return id:%d status:%s value:%s time_stamp:%lld\n", id, status.c_str(), value.c_str(), time_stamp);
-	return "get_return success";
+
+	//printf("get_return id:%d status:%s value:%s time_stamp:%lld\n", id, status.c_str(), value.c_str(), time_stamp);
+	//return "get_return success";
 }
-string Data::put_return(int id, string status)
+void Data::put_return(int id, string status)
 {
-	printf("put_return id:%d value:%s\n", id, status.c_str());
-	return "put_return success";
+
+	//printf("put_return id:%d value:%s\n", id, status.c_str());
+	//return "put_return success";
 }
 
 void Data::run()
