@@ -96,6 +96,8 @@ int Driver::putReturn(int id, int status) {
 		if (entry.suc >= THKVS_W || entry.tot - entry.suc > THKVS_N - THKVS_W) {
 			entries.erase(id);
 			flag = 2 + status;
+		} else {
+			entries.emplace(id, entry);
 		}
 	}
 	mu.unlock();
@@ -150,6 +152,8 @@ int Driver::getReturn(int id, int status, long long timestamp, string &value) {
 			entries.erase(id);
 			str = entry.value;
 			flag = 2 + status;
+		} else {
+			entries.emplace(id, entry);
 		}
 	}
 
