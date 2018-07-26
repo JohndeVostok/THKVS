@@ -9,12 +9,18 @@ namespace msgHandler {
     void handleGet(std::shared_ptr<OpMessage>& opm) {
         int id = opm->id;
         std::string key = opm->key;
-
-        //TODO: data::get()
+        std::string ip = opm->to_ip;
+        int port = opm->port;
+        Data::getInstance()->get(id,  ip, port, key);
     }
 
     void handlePut(std::shared_ptr<OpMessage>& opm) {
-        //TODO: data::put();
+        int id = opm->id;
+        std::string key = opm->key;
+        std::string value = opm->value;
+        std::string ip = opm->to_ip;
+        int port = opm->port;
+        Data::getInstance()->put(id, ip, port, key, value);
     }
 
     void handleGetRet(std::shared_ptr<OpRetMessage>& opm) {
@@ -84,5 +90,15 @@ namespace msgHandler {
     void sendGet(int id, std::string ip, int port, std::string& key) {
         OpMessage opm(m_op, ip, port, m_get, id, key);
         manager::send(std::make_shared<OpMessage>(opm));
+    }
+
+    void sendPutRet(int id, std::string ip, int port, int status) {
+        OpRetMessage oprm(m_op, ip, port, m_putret, status);
+        manager::send(std::make_shared<OpRetMessage>(oprm));
+    }
+
+    void sendGetRet(int id, std::string ip, int port, int status, std::string value, long long time_stamp) {
+        OpRetMessage oprm(m_op, ip, port, m_getret, id, status, value, time_stamp);
+        manager::send(std::make_shared<OpRetMessage>(oprm));
     }
 }

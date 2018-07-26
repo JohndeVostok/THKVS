@@ -19,28 +19,28 @@ long long getTime()
     return real;
 }
 
-void Data::put(int id, string key, string value)
+void Data::put(int id, string ip, int port, string key, string value)
 {
-	que.push(KeyValue(id, key, value, 1));
+	que.push(KeyValue(id, ip, port, key, value, 1));
 	return;
 }
 
-void Data::get(int id, string key)
+void Data::get(int id, string ip, int port, string key)
 {
 	string value = "haha";
-	que.push(KeyValue(id, key, value, 2));
+	que.push(KeyValue(id, ip, port, key, value, 2));
 	return;
 }
 
-void Data::get_return(int id, string status, string value, long long time_stamp)
+void Data::get_return(int id, string ip, int port, int status, string value, long long time_stamp)
 {
-
+	msgHandler::sendGetRet(id, ip, port, status, value, time_stamp);
 	//printf("get_return id:%d status:%s value:%s time_stamp:%lld\n", id, status.c_str(), value.c_str(), time_stamp);
 	//return "get_return success";
 }
-void Data::put_return(int id, string status)
+void Data::put_return(int id, string ip, int port, int status)
 {
-
+	msgHandler::sendPutRet(id, ip, port, status);
 	//printf("put_return id:%d value:%s\n", id, status.c_str());
 	//return "put_return success";
 }
@@ -50,7 +50,7 @@ void Data::run()
 	string key = "0";
 	string value = "0";
 	while(true) {
-		KeyValue kv = KeyValue(0, key, value, 0);
+		KeyValue kv = KeyValue(0, key, 0, key, value, 0);
 		que.pop(kv);
 		//put 
 		Value V;
@@ -59,23 +59,24 @@ void Data::run()
 		V.time_stamp = getTime();
 		if (kv.op == 1)
 		{
-			string status = "undefined";
+			//0 means success
+			int status = 1;
 			umap[kv.key] = V;
-			status = "success";
-			put_return(kv.id, status);
+			status = 0;
+			put_return(kv.id, kv.ip, kv.port, status);
 		}
 		if (kv.op == 2)
 		{
-			string status = "undefined";
+			int status = 1;
 			int time_stamp = 0;
 			if (umap.find(kv.key) == umap.end())
-				status = "not_found";
+				status = 1;
 			else
 			{
-				status = "found";
 				V = umap[kv.key];
+				status = 0;
 			}
-			get_return(kv.id, status, V.value, V.time_stamp);
+			get_return(kv.id, kv.ip, kv.port, status, V.value, V.time_stamp);
 		}
 	}
 }
