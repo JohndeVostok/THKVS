@@ -62,6 +62,14 @@ int Driver::getHosts(string &key, vector <int> &hosts) {
 }
 
 int Driver::put(string &key, string &value) {
+	bool flag;
+	{
+		lock_guard <mutex> lck(mu);
+		flag = enableFlag;
+	}
+	if (flag) {
+		putFinish(-1, 2);
+	}
 	SyncEntry entry;
 	entry.tot = 0;
 	entry.suc = 0;
@@ -114,6 +122,14 @@ int Driver::putFinish(int id, int status) {
 }
 
 int Driver::get(string &key) {
+	bool flag;
+	{
+		lock_guard <mutex> lck(mu);
+		flag = enableFlag;
+	}
+	if (flag) {
+		getFinish(-1, 2);
+	}
 	SyncEntry entry;
 	entry.tot = 0;
 	entry.suc = 0;
@@ -179,8 +195,37 @@ void Driver::test() {
 	}
 }
 
-void Driver::actDisable() {
-	unique_lock <mutex> lck(mu);
-	cond.wait(lck, [this]() {return entries.empty();});
+int Driver::setEnableFlag(bool flag) {
+	{
+		lock_guard <mutex> lck(mu);
+		enableFlagEntry.id = opid++;
+		enableFlagEntry.cnt = 0;
+	}
+	for (auto &host : hostList) {
+		//sendmessage();
+	}
 }
 
+int Driver::actSetEnableFlag(bool flag) {
+	unique_lock <mutex> lck(mu);
+	cond.wait(lck, [this]() {return entries.empty();});
+	enableFlag = flag;
+}
+
+int Driver::setEnableFlagReturn(int id, int status) {
+	bool flag = 0;
+	{
+		lock_guard <mutex> lck(mu);
+		enableFlagEntry.cnt++;
+		if (enableFlagEntry.cnt == hostList.size()) flag = 1;
+	}
+	if (flag) {
+		setEnableFlagFinish();
+	}
+	return 0;
+}
+
+int Driver::setEnableFlagFinish(int id, int status) {
+	cout << "[DEBUG SET ENABLE FLAG] id: " << id << " status: " << status << endl;
+	return 0;
+}

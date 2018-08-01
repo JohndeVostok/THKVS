@@ -16,9 +16,6 @@ using namespace std;
 
 class Driver {
 private:
-	Driver();
-
-	~Driver();
 	struct Host {
 		string host, ip;
 		int port;
@@ -31,8 +28,13 @@ private:
 
 	struct SyncEntry {
 		int tot = 0, suc = 0;
-		long long timestamp= -1;
+		long long timestamp = -1;
 		string value;
+	};
+
+	struct EnableFlagEntry {
+		int cnt;
+		int id = -1;
 	};
 
 	const int NODECOPY = 256;
@@ -45,12 +47,16 @@ private:
 	unordered_map <int, SyncEntry> entries;
 	vector <Host> hostList;
 	Host localhost;
+	EnableFlagEntry enableFlagEntry;
 
 	//Sync
 	unsigned opid = 0;
+	bool enableFlag = 0;
 	condition_variable cond;
 	mutex mu;
 
+	Driver();
+	~Driver();
 	unsigned hash(string &str);
 	int getHosts(string &key, vector <int> &hosts);
 
