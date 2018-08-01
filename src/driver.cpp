@@ -8,8 +8,8 @@
 Driver::Driver() {
 	ifstream fin("config");
 	Host tmp;
-	fin >> localhost.host >> localhost.ip >> localhost.port;
-	while (fin >> tmp.host >> tmp.ip >> tmp.port) {
+	fin >> localhost.hostname >> localhost.ip >> localhost.port;
+	while (fin >> tmp.hostname >> tmp.ip >> tmp.port) {
 		hostList.emplace_back(tmp);
 	}
 	for (int i = 0; i < hostList.size(); i++) {
@@ -19,10 +19,12 @@ Driver::Driver() {
 		unsigned nodehash;
 		for (int j = 0; j < (NODECOPY); j++) {
 			buf.str("");
-			buf << host.host << "#" << j;
+			buf << host.hostname << "#" << j;
 			tmpstr = buf.str();
 			nodehash = hash(tmpstr);
-			nodeMap.emplace(nodehash, i);
+			if (!nodeMap.count(nodehash)) {
+				nodeMap.emplace(nodehash, i);
+			}
 		}
 	}
 	fin.close();
@@ -111,7 +113,7 @@ int Driver::putReturn(int id, int status) {
 			}
 		}
 	}
-	cond.notify_one();
+	condEntries.notify_all();
 	if (flag > 1) {
 		putFinish(id, flag - 2);
 	}
@@ -155,33 +157,33 @@ int Driver::getReturn(int id, int status, long long timestamp, string &value) {
     std::cout << "[DEBUG DRIVER] Get Return id: " << id << " status: " << status << "value: " << value << std::endl;
 	int flag = 0;
 	string str;
-{
-	std::lock_guard<std::mutex> lck(mu);
-	if (entries.find(id) == entries.end()) {
-		flag = 1;
-	}
-	std::cout << "[DEBUG DRIVER] In getReturn: flag: " << flag << std::endl;
-	if (!flag) {
-		//SyncEntry entry = entries[id];
-		auto&& entry = entries[id];
-		entry.tot++;
-		entry.suc += status ^ 1;
-		if (!status) {
-			if (timestamp > entry.timestamp) {
-				entry.timestamp = timestamp;
-				entry.value = value;
-			}
+	{
+		lock_guard <mutex> lck(mu);
+		if (entries.find(id) == entries.end()) {
+			flag = 1;
 		}
-        std::cout << "[DEBUG DRIVER] In getReturn: " << "tot: " << entry.tot << " suc: " << entry.suc << std::endl;
-		if (entry.suc >= THKVS_R || entry.tot - entry.suc > THKVS_N - THKVS_R) {
-			entries.erase(id);
-			str = entry.value;
-			flag = 2 + status;
+		std::cout << "[DEBUG DRIVER] In getReturn: flag: " << flag << std::endl;
+		if (!flag) {
+			//SyncEntry entry = entries[id];
+			auto&& entry = entries[id];
+			entry.tot++;
+			entry.suc += status ^ 1;
+			if (!status) {
+				if (timestamp > entry.timestamp) {
+					entry.timestamp = timestamp;
+					entry.value = value;
+				}
+			}
+	        std::cout << "[DEBUG DRIVER] In getReturn: " << "tot: " << entry.tot << " suc: " << entry.suc << std::endl;
+			if (entry.suc >= THKVS_R || entry.tot - entry.suc > THKVS_N - THKVS_R) {
+				entries.erase(id);
+				str = entry.value;
+				flag = 2 + status;
+			}
 		}
 	}
 
-}
-	cond.notify_one();
+	condEntries.notify_all();
     if (flag > 1) {
 		getFinish(id, flag - 2, str); // entry.timestamp. entry.value;
 	}
@@ -190,12 +192,6 @@ int Driver::getReturn(int id, int status, long long timestamp, string &value) {
 
 int Driver::getFinish(int id, int status, string &value) {
 	cout << "[DEBUG DRIVER] GetFinish " << id << " " << status << " " << value << endl;
-}
-
-void Driver::test() {
-	for (auto &host : hostList) {
-		cout << host.host << host.count << endl;
-	}
 }
 
 int Driver::setEnableFlag(bool flag) {
@@ -208,29 +204,73 @@ int Driver::setEnableFlag(bool flag) {
 	for (auto &host : hostList) {
 		msgHandler::sendSetEnableFlag(id, localhost.ip, localhost.port, host.ip, host.port, flag);
 	}
+	unique_lock <mutex> lck(mu);
+	condEnable.wait(lck, [this]() {enableCnt.load() == tmpHost.size()});
 }
 
 int Driver::actSetEnableFlag(bool flag) {
 	unique_lock <mutex> lck(mu);
-	cond.wait(lck, [this]() {return entries.empty();});
+	condEntris.wait(lck, [this]() {return entries.empty();});
 	enableFlag = flag;
 	std::cout << "[DEBUG DRIVER] int actSetEnableFlag: enableFlag: " << enableFlag << std::endl;
 }
 
 int Driver::setEnableFlagReturn(int id, int status) {
-	bool flag = 0;
+	enableCnt++;
+	condEnable.notify_all();
+	return 0;
+}
+
+int Driver::addServer(string &hostname, string &ip, int port) {
+	setEnableFlag(1);
+	vector <Host> tmp;
+	serverCnt.store(0);
 	{
 		lock_guard <mutex> lck(mu);
-		enableFlagEntry.cnt++;
-		if (enableFlagEntry.cnt == hostList.size()) flag = 1;
+		tmp = hostList;
+		unsigned id = opid++;
+		for (auto &host : tmpHost) {
+			msgHandler::sendAddServer(id, localhost.ip, localhost.port, host.ip, host.port, hostname, ip, port);
+		}
 	}
-	if (flag) {
-		setEnableFlagFinish(id, 0);
+	unique_lock <mutex> lck(mu);
+	condServer.wait(lck, [this]() {serverCnt.load() == tmpHost.size()});
+	setEnableFlag(0);
+}
+
+int Driver::actAddServer(string &hostname, string &ip, int port) {
+	lock_guard <mutex> lck(mu);
+	Host tmp;
+	tmp.hostname = hostname;
+	tmp.ip = ip;
+	tmp.port = port;
+	hostList.emplace_back(tmp);
+
+	auto &host = hostList.back();
+	ostringstream buf;
+	string tmpstr;
+	unsigned nodehash;
+	for (int i = 0; i < NODECOPY; j++) {
+		buf.str("");
+		buf << host.hostname << "#" << i;
+		tmpstr = buf.str();
+		nodehash = hash(tmpstr);
+		if (!nodeMap.count(nodehash)) {
+			nodeMap.emplace(nodehash, hostList.size() - 1);
+		}
 	}
 	return 0;
 }
 
-int Driver::setEnableFlagFinish(int id, int status) {
-	cout << "[DEBUG SET ENABLE FLAG] id: " << id << " status: " << status << endl;
+int Driver::addServerReturn(int id, int status) {
+	serverCnt++;
+	condServer.notify_all();
 	return 0;
 }
+
+int Driver::test() {
+	for (auto &host : hostList) {
+		cout << "[DEBUG TEST] hostname: " << host.hostname << " ip: " << host.ip << " port: " << host.port << endl;
+	}
+}
+

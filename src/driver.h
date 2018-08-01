@@ -11,13 +11,14 @@
 #include <fstream>
 #include <sstream>
 #include <condition_variable>
+#include <atomic>
 
 using namespace std;
 
 class Driver {
 private:
 	struct Host {
-		string host, ip;
+		string hostname, ip;
 		int port;
 		int count = 0;
 	};
@@ -52,8 +53,9 @@ private:
 	//Sync
 	unsigned opid = 0;
 	bool enableFlag = 0;
-	condition_variable cond;
+	condition_variable condEntries, condServer, condEnable;
 	mutex mu;
+	atomic <int> serverCnt(0), enableCnt(0);
 
 	Driver();
 	~Driver();
@@ -77,6 +79,9 @@ public:
 	int actSetEnableFlag(bool flag);
 	int setEnableFlagReturn(int id, int status);
 	int setEnableFlagFinish(int id, int status);
+	int addServer(string &hostname, string &ip, int port);
+	int actAddServer(string &hostname, string &ip, int port);
+	int addServerReturn();
 	void test();
 };
 
