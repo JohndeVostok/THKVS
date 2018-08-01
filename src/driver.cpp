@@ -318,7 +318,7 @@ int Driver::removeServer(string &hostname) {
 		serverCnt.store(tmp.size());
 		unsigned id = opid++;
 		for (auto &host : tmp) {
-			msgHandler::sendAddServer(id, localhost.ip, localhost.port, host.ip, host.port, hostname);
+			msgHandler::sendRemoveServer(id, localhost.ip, localhost.port, host.ip, host.port, hostname);
 		}
 	}
     {
