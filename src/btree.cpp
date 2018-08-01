@@ -18,15 +18,6 @@ Btree::Btree() {
 
 Btree::~Btree() {}
 
-int Btree::allocPage(int) {
-	char buf[PAGESIZE];
-	memset(buf, 0, sizeof(buf));
-	file.seekp(0, ios::end);
-	int pageid = file.tellp() << 12;
-	file.write(buf, sizeof(buf));
-	return pageid;
-}
-
 int Btree::allocNode() {
 	int id = nodeList.size();
 	Node node;
@@ -42,16 +33,32 @@ int Btree::allocNode() {
 	return id;
 }
 
+int Btree::allocEntry() {
+	int id = entryPage.size();
+	int pageid = allocPage();
+	entryPage.emplace_back(pageid);
+	return id;
+}
+
+int Btree::allocPage() {
+	char buf[PAGESIZE];
+	memset(buf, 0, sizeof(buf));
+	file.seekp(0, ios::end);
+	int pageid = file.tellp() << 12;
+	file.write(buf, sizeof(buf));
+	return pageid;
+}
+
 int Btree::dumpNode(int id) {
 	Node &node = nodeList[id];
-	char buf[64];
+	char buf[NODESIZE];
 	memset(buf, 0, sizeof(buf));
 	char *tmp;
 	buf[0] = 0;
 	buf[1] = 1;
 	buf[2] = 0;
 	buf[3] = 1;
-	tmp = reinterpret_cast <char*>(&node.id);
+	tmp = reinterpret_cast <char*>(&id);
 	for (int i = 0; i < 4; i++) {
 		buf[4 + i] = tmp[i];
 	}
@@ -87,7 +94,7 @@ int Btree::dumpNode(int id) {
 
 Btree::Node Btree::loadNode(int page, int off) {
 	int hdoff = (page << 12) | off;
-	char buf[64];
+	char buf[NODESIZE];
 	file.seekg(hdoff, ios::beg);
 	file.read(buf, NODESIZE);
 	Node node;
@@ -111,6 +118,70 @@ Btree::Node Btree::loadNode(int page, int off) {
 	return node;
 }
 
+int Btree::dumpEntry(Entry &entry) {
+	int hdoff = entryPage[entry.id] << 12;
+	char buf[PAGESIZE];
+	memset(buf, 0, sizeof(buf));
+	char *tmp;
+	buf[0] = 1;
+	buf[1] = 0;
+	buf[2] = 1;
+	buf[3] = 0;
+	tmp = reinterpret_cast <char*>(&entry.id);
+	for (int i = 0; i < 4; i++) {
+		buf[4 + i] = tmp[i];
+	}
+	tmp = reinterpret_cast <char*>(&entry.timestamp);
+	for (int i = 0; i < 8; i++) {
+		buf[8 + i] = tmp[i];
+	}
+	int length;
+	length = entry.key.length();
+	tmp = reinterpret_cast <char*>(&length);
+	for (int i = 0; i < 4; i++) {
+		buf[16 + i] = tmp[i];
+	}
+	length = entry.value.length();
+	tmp = reinterpret_cast <char*>(&length);
+	for (int i = 0; i < 4; i++) {
+		buf[20 + i] = tmp[i];
+	}
+	for (int i = 0; i < entry.key.length(); i++) {
+		buf[32 + i] = entry.key[i];
+	}
+	for (int i = 0; i < entry.value.length(); i++) {
+		buf[64 + i] = entry.value[i];
+	}
+	file.seekp(hdoff, ios::beg);
+	file.write(buf, PAGESIZE);
+}
+
+Btree::Entry Btree::loadEntry(int page) {
+	int hdoff = page << 12;
+	char buf[PAGESIZE];
+	file.seekg(hdoff, ios::beg);
+	file.read(buf, PAGESIZE);
+	Entry entry;
+	int *tmp;
+	tmp = reinterpret_cast <int*> (buf + 4);
+	entry.id = *tmp;
+	long long *ltmp;
+	ltmp = reinterpret_cast <long long*> (buf + 8);
+	entry.timestamp = *ltmp;
+	tmp = reinterpret_cast <int*> (buf + 16);
+	int kl = *tmp;
+	tmp = reinterpret_cast <int*> (buf + 16);
+	int vl = *tmp;
+	entry.key = "";
+	for (int i = 0; i < kl; i++) {
+		entry.key = entry.key + buf[32 + i];
+	}
+	entry.value = "";
+	for (int i = 0; i < vl; i++) {
+		entry.value = entry.value + buf[64 + i];
+	}
+	return entry;
+}
 /*int Btree::split(int id) {
 	int id1 = allocNode(), id2 = allocNode();
 	Node &node0 = nodeList[id];
@@ -139,6 +210,16 @@ int Btree::insert(unsigned key) {
 }
 */
 void Btree::test() {
+	int id = allocEntry();
+	Entry entry;
+	entry.id = id;
+	entry.timestamp = 111l;
+	entry.key = "sb";
+	entry.value = "cnm";
+	dumpEntry(entry);
+	Entry e = loadEntry(0);
+	cout << entry.id << " " << entry.timestamp << " " << entry.key << " " << entry.value << endl;
+/*
 	int id = allocNode();
 	Node &node = nodeList[id];
 	node.prev = 8;
@@ -148,4 +229,5 @@ void Btree::test() {
 	dumpNode(id);
 	Node p = loadNode(0, 0);
 	cout << node.prev << " " << node.succ << " " << node.keys.size() << " " << node.keys[0] << endl;
+*/
 }

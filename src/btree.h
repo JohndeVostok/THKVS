@@ -16,6 +16,12 @@ private:
 		vector <int> childs;
 	};
 
+	struct Entry {
+		int id;
+		long long timestamp;
+		string key, value;
+	};
+
 	const string THKVS_DATA_FILENAME = "data";
 	const int PAGESIZE = 4096;
 	const int NODESIZE = 64;
@@ -28,13 +34,17 @@ private:
 	int nodepage, nodeoff;
 
 	fstream file;
+	vector <int> entryPage;
 	vector <Node> nodeList;
 	int rtid;
 
 	int allocNode();
-	int allocPage(int pageNum = 1);
+	int allocEntry();
+	int allocPage();
 	int dumpNode(int id);
 	Node loadNode(int page, int off);
+	int dumpEntry(Entry &entry);
+	Entry loadEntry(int page);
 public:
 	Btree();
 	~Btree();
