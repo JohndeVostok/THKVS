@@ -87,7 +87,7 @@ int Driver::put(string &key, string &value) {
 
 	for (int hostIdx : hosts) {
 		Host& host = hostList[hostIdx];
-		std::cout << "[DEBUG] " << host.ip << " " <<  host.port << " " << key << " " << value << std::endl;
+		std::cout << "[DEBUG DRIVER] before sendPut: id: " << id << " " << host.ip << " " <<  host.port << " " << key << " " << value << std::endl;
 		msgHandler::sendPut(id, localhost.ip, localhost.port, host.ip, host.port, key, value);
 	}
 	std::cout << "[DEBUG] ended of put" << std::endl;

@@ -20,6 +20,7 @@ namespace msgHandler {
         std::string value = opm->value;
         std::string ip = opm->srcip;
         int port = opm->srcport;
+        std::cout << "[DEBUG HANDLER] in handlePut: id: " << id << std::endl;
         Data::getInstance()->put(id, ip, port, key, value);
     }
 
@@ -67,7 +68,7 @@ namespace msgHandler {
     void handlePutRet(std::shared_ptr<OpRetMessage>& opm) {
         int id = opm->id;
         int status = opm->status;
-        std::cout << "[DEBUG Handler] After Received PutRet status: " << status << std::endl;
+        std::cout << "[DEBUG Handler] After Received PutRet status: " << status << " id: " << id << std::endl;
         Driver::getInstance()->putReturn(id, status);
         return ;
     }
@@ -161,7 +162,10 @@ namespace msgHandler {
 
 
     void sendPut(int id, std::string localip, int localport, std::string ip, int port, std::string& key, std::string& value) {
+        std::cout << "[DEBUG HANDLER] in sendPut before construtor: id: " << id << std::endl;
+
         OpMessage opm(m_op, ip, port, localip, localport, m_put, id, key, value);
+        std::cout << "[DEBUG HANDLER] in sendPut: opm->id: " << opm.id << std::endl;
         manager::send(std::make_shared<OpMessage>(opm));
         return ;
     }
@@ -172,8 +176,8 @@ namespace msgHandler {
     }
 
     void sendPutRet(int id, std::string ip, int port, int status) {
-        std::cout << "[DEBUG Handler] Before sendPutRet status: " << status << std::endl;
-        OpRetMessage oprm(m_opret, ip, port, m_putret, status);
+        std::cout << "[DEBUG Handler] Before sendPutRet status: " << status << " id: " << id << std::endl;
+        OpRetMessage oprm(m_opret, ip, port, m_putret, id, status);
         manager::send(std::make_shared<OpRetMessage>(oprm));
     }
 

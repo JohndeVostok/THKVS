@@ -1,8 +1,8 @@
 #ifndef DATA_H
 #define DATA_H
 
-#include "msg_queue.hpp"
-#include "crc.hpp"
+#include "network/msg_queue.hpp"
+#include "crc.h"
 #include <string>
 #include <unordered_map>
 #include <vector>

@@ -6,7 +6,7 @@
 #include <sys/time.h>    // for gettimeofday()
 #include <iostream>
 #include <fstream>
-
+#include "msg_handler.hpp"
 using namespace std;
 
 long long getTime()
@@ -33,14 +33,14 @@ void Data::get(int id, string ip, int port, string key)
 
 void Data::get_return(int id, string ip, int port, int status, string value, long long time_stamp)
 {
-	//msgHandler::sendGetRet(id, ip, port, status, value, time_stamp);
-	printf("get_return id:%d status:%d value:%s time_stamp:%lld\n", id, status, value.c_str(), time_stamp);
+	msgHandler::sendGetRet(id, ip, port, status, value, time_stamp);
+	//printf("get_return id:%d status:%d value:%s time_stamp:%lld\n", id, status, value.c_str(), time_stamp);
 	//return "get_return success";
 }
 void Data::put_return(int id, string ip, int port, int status)
 {
-	//msgHandler::sendPutRet(id, ip, port, status);
-	printf("put_return id:%d status:%d\n", id, status);
+	msgHandler::sendPutRet(id, ip, port, status);
+	//printf("put_return id:%d status:%d\n", id, status);
 	//return "put_return success";
 }
 
@@ -100,7 +100,7 @@ unsigned int Data::toint(string key)
 void Data::run()
 {
 	string str = "rm *.txt";
-	system(str.c_str());
+	//system(str.c_str());
 	Hashlist tmp;
 	tmp.begin = 0;
 	tmp.end = 4294967295;
@@ -139,14 +139,14 @@ void Data::run()
 		//
 		if (kv.op == 1)
 		{
-			printf("now kv.op == 1\n");
+			//printf("now kv.op == 1\n");
 			//0 means success
 			int status = 1;
 
 			int sz = hl.size();
-			printf("sz:%d\n", sz);
+			//printf("sz:%d\n", sz);
 			unsigned int hash_value = getCRC(kv.key);
-			printf("hash_value:%u\n", hash_value);
+			//printf("hash_value:%u\n", hash_value);
 
 			for (int i = 0; i < sz; i++)
 			{
@@ -158,7 +158,7 @@ void Data::run()
 				ifstream input;
 				string file_name = conkey(hl[i].begin) + "_" + conkey(hl[i].end) + ".txt";
 
-				printf("file_name:%s\n", file_name.c_str());
+				//printf("file_name:%s\n", file_name.c_str());
 				input.open(file_name, ios::in);
 				//means when reading, there is an error occured
 				if (!input)
@@ -189,7 +189,7 @@ void Data::run()
 				//now the flag == false means that it is a new key.
 				if (flag == false)
 				{
-					printf("flag == false!!\n");
+					//printf("flag == false!!\n");
 					tmp[hl[i].cnt].key = hash_value;
 					tmp[hl[i].cnt].value = kv.value;
 					tmp[hl[i].cnt].time_stamp = V.time_stamp;
@@ -197,10 +197,10 @@ void Data::run()
 				}
 				
 				sort(tmp, tmp + hl[i].cnt);
-				printf("kv.value:%s\n", kv.value.c_str());
+				//printf("kv.value:%s\n", kv.value.c_str());
 
-				for (int j = 0; j < hl[i].cnt; j++)
-					printf("key:%u value:%s time_stamp:%lld\n", tmp[j].key, tmp[j].value.c_str(), tmp[j].time_stamp);
+				//for (int j = 0; j < hl[i].cnt; j++)
+				//	printf("key:%u value:%s time_stamp:%lld\n", tmp[j].key, tmp[j].value.c_str(), tmp[j].time_stamp);
 
 				int cut = hl[i].cnt / 2;
 
@@ -213,9 +213,11 @@ void Data::run()
 
 					for (int j = 0; j < hl[i].cnt; j++)
 						output_1 << tmp[j].key << " " << tmp[j].value << " " << tmp[j].time_stamp << endl;
-					break;
+
 					//success
+                    std::cout << "[DEBUG DATA] before putReturn: id: " << kv.id << " ip: " << kv.ip << std::endl;
 					put_return(kv.id, kv.ip, kv.port, 0);
+                    break;
 				}
 				//means we need to divide it into 2 parts
 				else
@@ -242,7 +244,7 @@ void Data::run()
 
 					//hl[i]:
 					//
-					printf("dividing!!! hash_value:%u begin:%u end:%u\n", hash_value, hl[i].begin, hl[i].end);
+					//printf("dividing!!! hash_value:%u begin:%u end:%u\n", hash_value, hl[i].begin, hl[i].end);
 					
 					Hashlist t;
 					t.begin = tmp[cut].key;
@@ -258,6 +260,8 @@ void Data::run()
 
 
 					//success
+
+                    std::cout << "[DEBUG DATA] before putReturn2: id: " << kv.id << " ip: " << kv.ip << std::endl;
 					put_return(kv.id, kv.ip, kv.port, 0);
 				}
 			}
@@ -278,7 +282,7 @@ void Data::run()
 
 			for (int i = 0; i < sz; i++)
 			{
-				printf("hash_value:%u begin:%u end:%u\n", hash_value, hl[i].begin, hl[i].end);
+				//printf("hash_value:%u begin:%u end:%u\n", hash_value, hl[i].begin, hl[i].end);
 				//means the hash value is in this range
 				if (not (hl[i].begin <= hash_value && hash_value <= hl[i].end))
 					continue;
@@ -298,7 +302,7 @@ void Data::run()
 				{
 					input >> key >> value >> time_stamp;
 					//means found
-					printf("str_key:%s\n", key.c_str());
+					//printf("str_key:%s\n", key.c_str());
 					if (toint(key) == hash_value)
 					{
 						//meas found
@@ -314,7 +318,7 @@ void Data::run()
 			if (flag == true) continue;
 
 			status = 1;
-			printf("status:%d value:%s\n", status, value.c_str());
+			//printf("status:%d value:%s\n", status, value.c_str());
 			get_return(kv.id, kv.ip, kv.port, status, value, tolonglong(time_stamp));
 		}
 	}
