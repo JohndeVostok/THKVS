@@ -40,7 +40,7 @@ int Driver::getHosts(string &key, vector <int> &hosts) {
 		return 1;
 	}
 	unsigned keyhash = hash(key);
-	auto iter = nodeMap.lower_bound(keyhash);
+	auto iter = nodeMap.upper_bound(keyhash);
 	while (hosts.size() < 3) {
 		int flag = 0;
 		for (auto &t : hosts) {
