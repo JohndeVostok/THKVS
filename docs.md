@@ -1,6 +1,9 @@
 ### Fault tolerance:
 #### driver
 	addServer(hostname, ip, port);
+	actAddServer()
+	addServerReturn()
+	addServerFinish()
 	removeServer(hostname);
 #### msgHandler
 	sendMove(id, local_ip, local_port, src_ip, src_port, dest_ip, dest_port, hash_begin, hash_end);
@@ -18,5 +21,12 @@
 		move finish.
 	handelMoveReturn():
 		tell driver.
+
+	sendAddServer(id, local_ip, local_port, ip, port, new_hostname, new_ip, new_port)
+	handleAddServer()
+		tell Driver;
+	sendAddServerReturn(id, ip, port, status)
+	handleAddServerReturn()
+		tell Driver;
 #### data.
 	
