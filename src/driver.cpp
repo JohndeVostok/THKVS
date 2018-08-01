@@ -43,6 +43,9 @@ int Driver::getHosts(string &key, vector <int> &hosts) {
 	}
 	unsigned keyhash = hash(key);
 	auto iter = nodeMap.upper_bound(keyhash);
+	if (iter == nodeMap.end()) {
+		iter = nodeMap.begin();
+	}
 	while (hosts.size() < THKVS_N) {
 		int flag = 0;
 		for (auto &t : hosts) {
@@ -260,6 +263,9 @@ int Driver::addServer(string &hostname, string &ip, int port) {
 				iter--;
 			}
 			iter = nodeMap.upper_bound(nodehash);
+			if (iter == nodeMap.end()) {
+				iter = nodeMap.begin();
+			}
 			while (suc.size() < THKVS_N) {
 				flag = 0;
 				for (auto &node : suc) {
@@ -270,10 +276,10 @@ int Driver::addServer(string &hostname, string &ip, int port) {
 				if (!flag) {
 					suc.emplace_back(iter->first, iter->second);
 				}
+				iter++;
 				if (iter == nodeMap.end()) {
 					iter = nodeMap.begin();
 				}
-				iter++;
 			}
 			unsigned hashend = nodehash, hashbegin;
 			for (int i = 0; i < THKVS_N; i++) {
@@ -403,6 +409,9 @@ int Driver::removeServer(string &hostname) {
 				}
 			}
 			iter = nodeMap.upper_bound(nodehash);
+			if (iter == nodeMap.end()) {
+				iter = nodeMap.begin();
+			}
 			while (suc.size() < THKVS_N) {
 				flag = 0;
 				for (auto &node : suc) {
