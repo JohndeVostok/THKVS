@@ -154,8 +154,8 @@ public:
     std::string srcip;
     int srcport;
     OpEnableFlagMessage() {}
-    OpEnableFlagMessage(m_type _type, std::string _to_ip, int _port, std::string _srcip, int _srcport, int _id, bool flag)
-            : Message(_type, _to_ip, _port), srcip(_srcip), srcport(_srcport), id(_id) {}
+    OpEnableFlagMessage(m_type _type, std::string _to_ip, int _port, std::string _srcip, int _srcport, int _id, bool _flag)
+            : Message(_type, _to_ip, _port), srcip(_srcip), srcport(_srcport), id(_id), flag(_flag) {}
 
 private:
     friend class boost::serialization::access;
@@ -163,6 +163,7 @@ private:
     void serialize(Archive& ar, const unsigned int version) {
         ar & boost::serialization::base_object<Message>(*this);
         ar & id;
+        ar & flag;
         ar & srcip;
         ar & srcport;
     }

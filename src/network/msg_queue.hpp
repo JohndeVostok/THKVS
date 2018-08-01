@@ -20,7 +20,7 @@ public:
     MsgQueue &operator= (const MsgQueue&) = delete;
 
     void pop(T& elem);
-    bool empty() const;
+    bool empty();
 
     void push(const T& elem);
 
@@ -41,7 +41,7 @@ void MsgQueue<T>::pop(T& elem) {
 }
 
 template <typename T>
-bool MsgQueue<T>::empty() const {
+bool MsgQueue<T>::empty() {
     std::lock_guard<std::mutex> lck(mutex_);
     return queue_.empty();
 }

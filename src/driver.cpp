@@ -69,6 +69,7 @@ int Driver::put(string &key, string &value) {
 	}
 	if (flag) {
 		putFinish(-1, 2);
+		return 0;
 	}
 	SyncEntry entry;
 	entry.tot = 0;
@@ -130,6 +131,7 @@ int Driver::get(string &key) {
 	if (flag) {
 		string str = "";
 		getFinish(-1, 2, str);
+		return 0;
 	}
 	SyncEntry entry;
 	entry.tot = 0;
@@ -212,6 +214,7 @@ int Driver::actSetEnableFlag(bool flag) {
 	unique_lock <mutex> lck(mu);
 	cond.wait(lck, [this]() {return entries.empty();});
 	enableFlag = flag;
+	std::cout << "[DEBUG DRIVER] int actSetEnableFlag: enableFlag: " << enableFlag << std::endl;
 }
 
 int Driver::setEnableFlagReturn(int id, int status) {

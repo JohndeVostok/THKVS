@@ -50,9 +50,16 @@ int main() {
         if (op == "put") {
             std::cin >> key >> value;
             Driver::getInstance()->put(key, value);
-        } else {
+        } else if (op == "get") {
             std::cin >> key;
             Driver::getInstance()->get(key);
+        } else if (op == "set") {
+            std::cin >> key;
+            if (key == "0") {
+                Driver::getInstance()->setEnableFlag(false);
+            } else {
+                Driver::getInstance()->setEnableFlag(true);
+            }
         }
     }
     std::string key = "sb", value = "caonima";
