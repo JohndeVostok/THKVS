@@ -270,10 +270,10 @@ int Driver::addServer(string &hostname, string &ip, int port) {
 				if (!flag) {
 					suc.emplace_back(iter->first, iter->second);
 				}
-				iter++;
 				if (iter == nodeMap.end()) {
 					iter = nodeMap.begin();
 				}
+				iter++;
 			}
 			unsigned hashend = nodehash, hashbegin;
 			for (int i = 0; i < THKVS_N; i++) {
@@ -397,12 +397,12 @@ int Driver::removeServer(string &hostname) {
 				if (!flag) {
 					pre.emplace_back(iter->first, iter->second);
 				}
+                iter--;
 				if (iter == nodeMap.begin()) {
 					iter = nodeMap.end();
 				}
-				iter--;
 			}
-			auto iter = nodeMap.upper_bound(nodehash);
+			iter = nodeMap.upper_bound(nodehash);
 			while (suc.size() < THKVS_N) {
 				flag = 0;
 				for (auto &node : suc) {
@@ -425,10 +425,10 @@ int Driver::removeServer(string &hostname) {
 				unsigned id = opid.load();
 				hashbegin = pre[i].first;
 				auto &desthost = hostList[suc[THKVS_N - i - 1].second];
-				cout << "[DEBUG DRIVER] in removeServer send move msg: id: " << id << " srcport: " << srchost.port << " destport: " << desthhost.port << " begin: " << hashbegin << " end: " << hashend << endl;
+				cout << "[DEBUG DRIVER] in removeServer send move msg: id: " << id << " srcport: " << srchost.port << " destport: " << desthost.port << " begin: " << hashbegin << " end: " << hashend << endl;
 				msgHandler::sendMove(id, localhost.ip, localhost.port, srchost.ip, srchost.port, desthost.ip, desthost.port, hashbegin, hashend);
 				hashend = hashbegin;
-				srchost = pre[i];
+				srchost = hostList[pre[i].second];
 			}
 		}
 	}
@@ -443,9 +443,9 @@ int Driver::removeServer(string &hostname) {
 	setEnableFlag(1);
 	{
 		lock_guard <mutex> lck(mu);
-		serverCnt.store(tmp.size());
+		serverCnt.store(hostList.size() - 1);
 		unsigned id = opid++;
-		for (auto &host : tmp) {
+		for (auto &host : hostList) {
 			msgHandler::sendRemoveServer(id, localhost.ip, localhost.port, host.ip, host.port, hostname);
 		}
 	}
