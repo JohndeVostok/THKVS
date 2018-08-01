@@ -16,12 +16,17 @@ namespace msgHandler {
     void handleSetFlag(std::shared_ptr<OpEnableFlagMessage>& oefm);
     void handleAddServer(std::shared_ptr<OpAddServerMessage>& oasm);
     void handleRemoveServer(std::shared_ptr<OpRemoveServerMessage>& orsm);
+    void handleMove(std::shared_ptr<OpMoveMessage>& omm);
+    void handleDataMove(std::shared_ptr<OpDataMoveMessage> &odmm);
 
     void handleGetRet(std::shared_ptr<OpRetMessage>& opm);
     void handlePutRet(std::shared_ptr<OpRetMessage>& opm);
     void handleSetFlagRet(std::shared_ptr<OpRetMessage>& opm);
     void handleAddServerRet(std::shared_ptr<OpRetMessage>& opm);
     void handleRemoveServerRet(std::shared_ptr<OpRetMessage>& opm);
+    void handleDataMoveRet(std::shared_ptr<OpRetMessage> &opm);
+    void handleMoveRet(std::shared_ptr<OpRetMessage> &opm);
+
     // while loop recv msg
     void run();
 
@@ -47,6 +52,15 @@ namespace msgHandler {
 
     void sendRemoveServerRet(int id, std::string ip, int port, int status);
 
+    void sendMove(int id, std::string localip, int localport, std::string remoteSrcIp, int remoteSrcPort,
+                  std::string remoteDstIp, int remoteDstPort, unsigned hashBegin, unsigned hashEnd);
+
+    void sendDataMove(int id, std::string localip, int localport, std::string ip, int port,
+                      std::list<std::string>& key, std::list<std::string>& value);
+
+    void sendDataMoveRet(int id, std::string ip, int port, int status);
+
+    void sendMoveRet(int id, std::string ip, int port, int status)
 }
 
 

@@ -81,6 +81,18 @@ void TcpConnection::handle_body(const boost::system::error_code& error) {
             msgToRecv = std::make_shared<OpRemoveServerMessage>(orsM);
             break;
         }
+        case m_move: {
+            OpMoveMessage omM;
+            ia >> omM;
+            msgToRecv = std::make_shared<OpMoveMessage>(omM);
+            break;
+        }
+        case m_datamove: {
+            OpDataMoveMessage odmM;
+            ia >> odmM;
+            msgToRecv = std::make_shared<OpDataMoveMessage>(odmM);
+            break;
+        }
         default: {
             break;
         }
@@ -123,6 +135,8 @@ void TcpConnection::write_message() {
     std::shared_ptr<OpEnableFlagMessage> oefm;
     std::shared_ptr<OpAddServerMessage> oasm;
     std::shared_ptr<OpRemoveServerMessage> orsm;
+    std::shared_ptr<OpMoveMessage> omm;
+    std::shared_ptr<OpDataMoveMessage> odmm;
     switch (msgToSend->type) {
         case m_text: {
             tm = std::dynamic_pointer_cast<TextMessage>(msgToSend);
@@ -152,6 +166,16 @@ void TcpConnection::write_message() {
         case m_removeserver: {
             orsm = std::dynamic_pointer_cast<OpRemoveServerMessage>(msgToSend);
             archive << (*orsm);
+            break;
+        }
+        case m_move: {
+            omm = std::dynamic_pointer_cast<OpMoveMessage>(msgToSend);
+            archive << (*omm);
+            break;
+        }
+        case m_datamove: {
+            odmm = std::dynamic_pointer_cast<OpDataMoveMessage>(msgToSend);
+            archive << (*odmm);
             break;
         }
         default: {

@@ -55,6 +55,31 @@ namespace msgHandler {
         sendRemoveServerRet(id, ip, port, status);
     }
 
+    void handleMove(std::shared_ptr<OpMoveMessage> &omm) {
+        int id = omm->id;
+        unsigned hashBegin = omm->hashBegin;
+        unsigned hashEnd = omm->hashEnd;
+        std::string srcip = omm->srcip;
+        int srcport = omm->srcport;
+        std::string remoteSrcIp = omm->remoteSrcip;
+        int remoteSrcPort = omm->remoteSrcport;
+        std::string remoteDstIp = omm->remoteDstip;
+        int remoteDstPort = omm->remoteDstport;
+        Data::getInstance()->getMoveData(id, hashBegin, hashEnd, srcip, srcport, remoteSrcIp, remoteSrcPort, remoteDstIp, remoteDstPort);
+    }
+
+    void handleDataMove(std::shared_ptr<OpDataMoveMessage> &odmm) {
+        std::list<std::string> key = std::move(odmm->key);
+        std::list<std::string> value = std::move(odmm->value);
+        int id = odmm->id;
+        std::string srcip = odmm->srcip;
+        int srcport = odmm->srcport;
+        //TODO: tell data;
+        Data::getInstance()->recvMoveData(id, srcip, srcport, key, value);
+    }
+
+
+
     void handleGetRet(std::shared_ptr<OpRetMessage>& opm) {
         int id = opm->id;
         int status = opm->status;
@@ -91,6 +116,18 @@ namespace msgHandler {
         int id = opm->id;
         int status = opm->status;
         Driver::getInstance()->removeServerReturn(id, status);
+    }
+
+    void handleDataMoveRet(std::shared_ptr<OpRetMessage> &opm) {
+        int id = opm->id;
+        int status = opm->status;
+        Data::getInstance()->moveDataReturn(id, status);
+    }
+
+    void handleMoveRet(std::shared_ptr<OpRetMessage> &opm) {
+        int id = opm->id;
+        int status = opm->status;
+        Driver::getInstance->moveReturn(id, status);
     }
     // while loop recv msg
     void run() {
@@ -135,6 +172,14 @@ namespace msgHandler {
                             handleRemoveServerRet(oprm);
                             break;
                         }
+                        case m_datamoveret: {
+                            handleDataMoveRet(oprm);
+                            break;
+                        }
+                        case m_moveret: {
+                            handleMoveRet(oprm);
+                            break;
+                        }
                     }
                     break;
                 }
@@ -151,6 +196,16 @@ namespace msgHandler {
                 case m_removeserver: {
                     std::shared_ptr<OpRemoveServerMessage> orsm = std::dynamic_pointer_cast<OpRemoveServerMessage>(m);
                     handleRemoveServer(orsm);
+                    break;
+                }
+                case m_move: {
+                    std::shared_ptr<OpMoveMessage> omm = std::dynamic_pointer_cast<OpMoveMessage>(m);
+                    handleMove(omm);
+                    break;
+                }
+                case m_datamove: {
+                    std::shared_ptr<OpDataMoveMessage> odmm = std::dynamic_pointer_cast<OpDataMoveMessage>(m);
+                    handleDataMove(odmm);
                     break;
                 }
                 default: {
@@ -225,4 +280,30 @@ namespace msgHandler {
         return ;
     }
 
+    void sendMove(int id, std::string localip, int localport, std::string remoteSrcIp, int remoteSrcPort,
+                  std::string remoteDstIp, int remoteDstPort, unsigned hashBegin, unsigned hashEnd) {
+        OpMoveMessage omm(m_move, remoteSrcIp, remoteSrcPort, localip, localport, id,
+                           remoteDstIp, remoteDstPort, hashBegin, hashEnd);
+        manager::send(std::make_shared<OpMoveMessage>(omm));
+        return ;
+    }
+
+    void sendDataMove(int id, std::string localip, int localport, std::string ip, int port,
+                      std::list<std::string>& key, std::list<std::string>& value) {
+        OpDataMoveMessage odmm(m_datamove, ip, port, localip, localport, id, key, value);
+        manager::send(std::make_shared<OpDataMoveMessage>(odmm));
+        return ;
+    }
+
+    void sendDataMoveRet(int id, std::string ip, int port, int status) {
+        OpRetMessage oprm(m_opret, ip, port, m_datamoveret, id, status);
+        manager::send(std::make_shared<OpRetMessage>(oprm));
+        return ;
+    }
+
+    void sendMoveRet(int id, std::string ip, int port, int status) {
+        OpRetMessage oprm(m_opret, ip, port, m_moveret, id, status);
+        manager::send(std::make_shared<OpRetMessage>(oprm));
+        return ;
+    }
 }
