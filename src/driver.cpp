@@ -281,7 +281,9 @@ int Driver::addServer(string &hostname, string &ip, int port) {
 				unsigned id = opid.load();
 				hashbegin = pre[i].first;
 				auto &srchost = hostList[suc[THKVS_N - i - 1].second];
+				cout << "[DEBUG DRIVER] in addServer send move msg: id: " << id << " srcport: " << srchost.port << " destport: " << port << " begin: " << hashbegin << " end: " << hashend << endl;
 				msgHandler::sendMove(id, localhost.ip, localhost.port, srchost.ip, srchost.port, ip, port, hashbegin, hashend);
+				hashend = hashbegin;
 			}
 		}
 	}
@@ -306,10 +308,12 @@ int Driver::addServer(string &hostname, string &ip, int port) {
 	}
     {
         unique_lock<mutex> lck(mu);
-        condServer.wait(lck, [this]() { return serverCnt.load() == 0; });
+        condServer.wait(lck, [this](){
+        	return serverCnt.load() == 0;
+        });
     }
 	setEnableFlag(0);
-	cout << "[DEBUG DRIVER] in removeServer" << endl;
+	cout << "[DEBUG DRIVER] in addServer" << endl;
 	return 0;
 }
 
@@ -351,21 +355,91 @@ int Driver::removeServer(string &hostname) {
 	if (flag) {
 		return 1;
 	}
-	vector <Host> tmp;
+
 	flag = 1;
-	{
-		lock_guard <mutex> lck(mu);
-		for (auto &host : hostList) {
-			if (host.hostname == hostname) {
-				flag = 0;
-			} else {
-				tmp.emplace_back(host);
-			}
+	Host chost;
+	for (auto &host : hostList) {
+		if (host.hostname == hostname) {
+			flag = 0;
+			chost = host;
 		}
 	}
 	if (flag) {
 		return 1;
 	}
+
+	vector <pair <unsigned, int>> pre, suc;
+	ostringstream buf;
+	string tmpstr;
+	unsigned nodehash;
+	moveCnt.store(0);
+	for (int i = 0; i < NODECOPY; i++) {
+		buf.str("");
+		buf << hostname << "#" << i;
+		tmpstr = buf.str();
+		nodehash = hash(tmpstr);
+		if (!nodeMap.count(nodehash)) {
+			moveCnt++;
+			pre.clear();
+			suc.clear();
+			auto iter = nodeMap.upper_bound(nodehash);
+			if (iter == nodeMap.begin()) {
+				iter = nodeMap.end();
+			}
+			iter--;
+			while (pre.size() < THKVS_N) {
+				flag = 0;
+				for (auto &node : pre) {
+					if (iter->second == node.second) {
+						flag = 1;
+					}
+				}
+				if (!flag) {
+					pre.emplace_back(iter->first, iter->second);
+				}
+				if (iter == nodeMap.begin()) {
+					iter = nodeMap.end();
+				}
+				iter--;
+			}
+			auto iter = nodeMap.upper_bound(nodehash);
+			while (suc.size() < THKVS_N) {
+				flag = 0;
+				for (auto &node : suc) {
+					if (iter->second == node.second) {
+						flag = 1;
+					}
+				}
+				if (!flag) {
+					suc.emplace_back(iter->first, iter->second);
+				}
+				iter++;
+				if (iter == nodeMap.end()) {
+					iter = nodeMap.begin();
+				}
+			}
+			unsigned hashend = nodehash, hashbegin;
+			Host srchost = chost;
+			for (int i = 0; i < THKVS_N; i++) {
+				opid++;
+				unsigned id = opid.load();
+				hashbegin = pre[i].first;
+				auto &desthost = hostList[suc[THKVS_N - i - 1].second];
+				cout << "[DEBUG DRIVER] in removeServer send move msg: id: " << id << " srcport: " << srchost.port << " destport: " << desthhost.port << " begin: " << hashbegin << " end: " << hashend << endl;
+				msgHandler::sendMove(id, localhost.ip, localhost.port, srchost.ip, srchost.port, desthost.ip, desthost.port, hashbegin, hashend);
+				hashend = hashbegin;
+				srchost = pre[i];
+			}
+		}
+	}
+
+    {
+        unique_lock<mutex> lck(mu);
+        condMove.wait(lck, [this](){
+        	return moveCnt.load() == 0;
+        });
+    }
+
 	setEnableFlag(1);
 	{
 		lock_guard <mutex> lck(mu);
@@ -375,6 +449,7 @@ int Driver::removeServer(string &hostname) {
 			msgHandler::sendRemoveServer(id, localhost.ip, localhost.port, host.ip, host.port, hostname);
 		}
 	}
+
     {
         unique_lock<mutex> lck(mu);
         condServer.wait(lck, [this]() {
@@ -400,7 +475,7 @@ int Driver::actRemoveServer(string &hostname) {
 		ostringstream buf;
 		string tmpstr;
 		unsigned nodehash;
-		for (int j = 0; j < (NODECOPY); j++) {
+		for (int j = 0; j < NODECOPY; j++) {
 			buf.str("");
 			buf << host.hostname << "#" << j;
 			tmpstr = buf.str();
@@ -429,6 +504,10 @@ int Driver::moveReturn(int id, int status) {
 int Driver::test() {
 	for (auto &host : hostList) {
 		cout << "[DEBUG DRIVER] at test: hostname: " << host.hostname << " ip: " << host.ip << " port: " << host.port << endl;
+	}
+	cout << "[DEBUG DRIVER] at test: nodeMap:" << endl;
+	for (auto iter = nodeMap.begin(); iter != nodeMap.end(); iter++) {
+		cout << "hash: " << iter->first << "id: " << iter->second << endl;
 	}
 }
 
