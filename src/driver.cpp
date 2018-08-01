@@ -304,7 +304,7 @@ int Driver::removeServer(string &hostname) {
 			if (host.hostname == hostname) {
 				flag = 0;
 			} else {
-				tmp.emplace(host);
+				tmp.emplace_back(host);
 			}
 		}
 	}
@@ -336,10 +336,10 @@ int Driver::actRemoveServer(string &hostname) {
 	hostList.clear();
 	for (auto &host : tmp) {
 		if (host.hostname != hostname) {
-			hostList.emplace(host);
+			hostList.emplace_back(host);
 		}
 	}
-
+    nodeMap.clear();
 	for (int i = 0; i < hostList.size(); i++) {
 		auto &host = hostList[i];
 		ostringstream buf;

@@ -44,6 +44,15 @@ namespace msgHandler {
         sendAddServerRet(id, ip, port, status);
     }
 
+    void handleRemoveServer(std::shared_ptr<OpRemoveServerMessage> &orsm) {
+        std::string hostname = orsm->hostname;
+        Driver::getInstance()->actRemoveServer(hostname);
+        int id = orsm->id;
+        std::string ip = orsm->srcip;
+        int port = orsm->srcport;
+        int status = 0;
+        sendRemoveServerRet(id, ip, port, status);
+    }
 
     void handleGetRet(std::shared_ptr<OpRetMessage>& opm) {
         int id = opm->id;
@@ -75,6 +84,12 @@ namespace msgHandler {
         int status = opm->status;
         Driver::getInstance()->addServerReturn(id, status);
         return ;
+    }
+
+    void handleRemoveServerRet(std::shared_ptr<OpRetMessage> &opm) {
+        int id = opm->id;
+        int status = opm->status;
+        Driver::getInstance()->removeServerReturn(id, status);
     }
     // while loop recv msg
     void run() {
@@ -115,6 +130,10 @@ namespace msgHandler {
                             handleAddServerRet(oprm);
                             break;
                         }
+                        case m_removeserverret: {
+                            handleRemoveServerRet(oprm);
+                            break;
+                        }
                     }
                     break;
                 }
@@ -126,6 +145,11 @@ namespace msgHandler {
                 case m_addserver: {
                     std::shared_ptr<OpAddServerMessage> oasm = std::dynamic_pointer_cast<OpAddServerMessage>(m);
                     handleAddServer(oasm);
+                    break;
+                }
+                case m_removeserver: {
+                    std::shared_ptr<OpRemoveServerMessage> orsm = std::dynamic_pointer_cast<OpRemoveServerMessage>(m);
+                    handleRemoveServer(orsm);
                     break;
                 }
                 default: {
@@ -171,8 +195,8 @@ namespace msgHandler {
         return ;
     }
 
-    void sendAddServer(int id, std::string localip, int localport, std::string ip, int port, std::string hostname,
-                       std::string hostip, int hostport) {
+    void sendAddServer(int id, std::string localip, int localport, std::string ip, int port,
+                       std::string hostname, std::string hostip, int hostport) {
         OpAddServerMessage oasm(m_addserver, ip, port, localip, localport, id, hostname, hostip, hostport);
         manager::send(std::make_shared<OpAddServerMessage>(oasm));
         return ;
@@ -184,5 +208,17 @@ namespace msgHandler {
         return ;
     }
 
+    void sendRemoveServer(int id, std::string localip, int localport, std::string ip, int port,
+                          std::string hostname) {
+        OpRemoveServerMessage orsm(m_removeserver, ip, port, localip, localport, id, hostname);
+        manager::send(std::make_shared<OpRemoveServerMessage>(orsm));
+        return ;
+    }
+
+    void sendRemoveServerRet(int id, std::string ip, int port, int status) {
+        OpRetMessage oprm(m_opret, ip, port, m_removeserverret, id, status);
+        manager::send(std::make_shared<OpRetMessage>(oprm));
+        return ;
+    }
 
 }

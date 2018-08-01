@@ -67,6 +67,10 @@ int main() {
             Driver::getInstance()->addServer(hostname, ip, port);
         } else if (op == "test") {
             Driver::getInstance()->test();
+        } else if (op == "remove") {
+            std::string hostname;
+            std::cin >> hostname;
+            Driver::getInstance()->removeServer(hostname);
         }
     }
     std::string key = "sb", value = "caonima";

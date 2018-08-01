@@ -15,14 +15,15 @@ namespace msgHandler {
     void handlePut(std::shared_ptr<OpMessage>& opm);
     void handleSetFlag(std::shared_ptr<OpEnableFlagMessage>& oefm);
     void handleAddServer(std::shared_ptr<OpAddServerMessage>& oasm);
+    void handleRemoveServer(std::shared_ptr<OpRemoveServerMessage>& orsm);
 
     void handleGetRet(std::shared_ptr<OpRetMessage>& opm);
     void handlePutRet(std::shared_ptr<OpRetMessage>& opm);
     void handleSetFlagRet(std::shared_ptr<OpRetMessage>& opm);
     void handleAddServerRet(std::shared_ptr<OpRetMessage>& opm);
+    void handleRemoveServerRet(std::shared_ptr<OpRetMessage>& opm);
     // while loop recv msg
     void run();
-
 
     void sendPut(int id, std::string localip, int localport, std::string ip, int port, std::string& key, std::string& value);
 
@@ -40,6 +41,11 @@ namespace msgHandler {
                        std::string hostname, std::string hostip, int hostport);
 
     void sendAddServerRet(int id, std::string ip, int port, int status);
+
+    void sendRemoveServer(int id, std::string localip, int localport, std::string ip, int port,
+                          std::string hostname);
+
+    void sendRemoveServerRet(int id, std::string ip, int port, int status);
 
 }
 
