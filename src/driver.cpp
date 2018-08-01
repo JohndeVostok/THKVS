@@ -87,14 +87,11 @@ int Driver::put(string &key, string &value) {
 
 	for (int hostIdx : hosts) {
 		Host& host = hostList[hostIdx];
-		std::cout << "[DEBUG DRIVER] before sendPut: id: " << id << " " << host.ip << " " <<  host.port << " " << key << " " << value << std::endl;
 		msgHandler::sendPut(id, localhost.ip, localhost.port, host.ip, host.port, key, value);
 	}
-	std::cout << "[DEBUG] ended of put" << std::endl;
 }
 
 int Driver::putReturn(int id, int status) {
-    std::cout << "[DEBUG DRIVER] Put Return id: " << id << " status: " << status << std::endl;
 
     int flag = 0;
 	{
@@ -106,7 +103,6 @@ int Driver::putReturn(int id, int status) {
 			auto&& entry = entries[id];
 			entry.tot++;
 			entry.suc += status ^ 1;
-    	    std::cout << "[DEBUG DRIVER] In putReturn: " << "tot: " << entry.tot << " suc: " << entry.suc << std::endl;
 			if (entry.suc >= THKVS_W || entry.tot - entry.suc > THKVS_N - THKVS_W) {
 				entries.erase(id);
 				flag = 2 + status;
@@ -121,7 +117,6 @@ int Driver::putReturn(int id, int status) {
 }
 
 int Driver::putFinish(int id, int status) {
-	cout << "[DEBUG DRIVER] PutFinish " << id << " " << status << endl;
 }
 
 int Driver::get(string &key) {
@@ -144,7 +139,6 @@ int Driver::get(string &key) {
 		id = opid++;
 		entries.emplace(id, entry);
 	}
-	std::cout << "[DEBUG DRIVER] Before Get id: " << id << std::endl;
 	vector <int> hosts;
 	getHosts(key, hosts);
 	for (int hostIdx : hosts) {
@@ -154,7 +148,6 @@ int Driver::get(string &key) {
 }
 
 int Driver::getReturn(int id, int status, long long timestamp, string &value) {
-    std::cout << "[DEBUG DRIVER] Get Return id: " << id << " status: " << status << "value: " << value << std::endl;
 	int flag = 0;
 	string str;
 	{
@@ -162,7 +155,6 @@ int Driver::getReturn(int id, int status, long long timestamp, string &value) {
 		if (entries.find(id) == entries.end()) {
 			flag = 1;
 		}
-		std::cout << "[DEBUG DRIVER] In getReturn: flag: " << flag << std::endl;
 		if (!flag) {
 			//SyncEntry entry = entries[id];
 			auto&& entry = entries[id];
@@ -174,7 +166,6 @@ int Driver::getReturn(int id, int status, long long timestamp, string &value) {
 					entry.value = value;
 				}
 			}
-	        std::cout << "[DEBUG DRIVER] In getReturn: " << "tot: " << entry.tot << " suc: " << entry.suc << std::endl;
 			if (entry.suc >= THKVS_R || entry.tot - entry.suc > THKVS_N - THKVS_R) {
 				entries.erase(id);
 				str = entry.value;
@@ -191,7 +182,6 @@ int Driver::getReturn(int id, int status, long long timestamp, string &value) {
 }
 
 int Driver::getFinish(int id, int status, string &value) {
-	cout << "[DEBUG DRIVER] GetFinish " << id << " " << status << " " << value << endl;
 }
 
 int Driver::setEnableFlag(bool flag) {
@@ -202,7 +192,6 @@ int Driver::setEnableFlag(bool flag) {
 		enableFlagEntry.cnt = 0;
 	}
 	enableCnt.store(hostList.size());
-	std::cout << "[DEBUG DRIVER] in setEnableFlag: enableCnt: " << enableCnt.load() << std::endl;
     for (auto &host : hostList) {
 		msgHandler::sendSetEnableFlag(id, localhost.ip, localhost.port, host.ip, host.port, flag);
 	}
@@ -214,12 +203,10 @@ int Driver::actSetEnableFlag(bool flag) {
 	unique_lock <mutex> lck(mu);
 	condEntries.wait(lck, [this]() {return entries.empty();});
 	enableFlag = flag;
-	std::cout << "[DEBUG DRIVER] in actSetEnableFlag: enableFlag: " << enableFlag << std::endl;
 }
 
 int Driver::setEnableFlagReturn(int id, int status) {
 	enableCnt--;
-	std::cout << "[DEBUG DRIVER] in setEnableFlagReturn: enableCnt: " << enableCnt.load() << std::endl;
 
 	condEnable.notify_all();
 	return 0;
@@ -232,7 +219,6 @@ int Driver::addServer(string &hostname, string &ip, int port) {
 		flag = enableFlag;
 	}
 	if (flag) {
-		cout << "[DEBUG DRIVER] in addServer trap disabled." << endl;
 		return 1;
 	}
 	setEnableFlag(1);
@@ -246,11 +232,9 @@ int Driver::addServer(string &hostname, string &ip, int port) {
 			msgHandler::sendAddServer(id, localhost.ip, localhost.port, host.ip, host.port, hostname, ip, port);
 		}
 	}
-	std::cout << "[DEBUG DRIVER] before condServer.wait" << std::endl;
     {
         unique_lock<mutex> lck(mu);
         condServer.wait(lck, [this]() { return serverCnt.load() == 0; });
-        std::cout << "[DEBUG DRIVER] after condServer.wait" << std::endl;
     }
 	setEnableFlag(0);
 }
@@ -281,7 +265,6 @@ int Driver::actAddServer(string &hostname, string &ip, int port) {
 
 int Driver::addServerReturn(int id, int status) {
 	serverCnt--;
-	std::cout << "[DEBUG DRIVER] in addServerReturn: serverCnt: " << serverCnt.load() << std::endl;
 	condServer.notify_all();
 	return 0;
 }
@@ -293,7 +276,6 @@ int Driver::removeServer(string &hostname) {
 		flag = enableFlag;
 	}
 	if (flag) {
-		cout << "[DEBUG DRIVER] in removeServer trap disabled." << endl;
 		return 1;
 	}
 	vector <Host> tmp;
@@ -309,7 +291,6 @@ int Driver::removeServer(string &hostname) {
 		}
 	}
 	if (flag) {
-		cout << "[DEBUG DRIVER] in removeServer trap disabled." << endl;
 		return 1;
 	}
 	setEnableFlag(1);
@@ -361,14 +342,12 @@ int Driver::actRemoveServer(string &hostname) {
 
 int Driver::removeServerReturn(int id, int status) {
 	serverCnt--;
-	std::cout << "[DEBUG DRIVER] in removeServerReturn: serverCnt: " << serverCnt.load() << std::endl;
 	condServer.notify_all();
 	return 0;
 }
 
 int Driver::test() {
 	for (auto &host : hostList) {
-		cout << "[DEBUG TEST] hostname: " << host.hostname << " ip: " << host.ip << " port: " << host.port << endl;
 	}
 }
 
