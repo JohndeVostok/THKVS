@@ -1,4 +1,4 @@
-#include "crc.h"
+#include "crc."
 
 unsigned getCRC(unsigned char* buf, int nLength) {
 	if (nLength < 1) {
