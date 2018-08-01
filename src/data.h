@@ -6,6 +6,7 @@
 #include <string>
 #include <unordered_map>
 #include <vector>
+#include <list>
 
 using namespace std;
 
@@ -78,7 +79,7 @@ private:
 	MsgQueue<KeyValue> que;
 
 	//This is for test.
-	unordered_map <pair <unsigned, pair <string, int>>> id_to_host;
+	unordered_map <unsigned, pair <string, int> > id_to_host;
 
 	Data() {};
 	~Data() {};

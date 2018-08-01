@@ -127,7 +127,7 @@ namespace msgHandler {
     void handleMoveRet(std::shared_ptr<OpRetMessage> &opm) {
         int id = opm->id;
         int status = opm->status;
-        Driver::getInstance->moveReturn(id, status);
+        Driver::getInstance()->moveReturn(id, status);
     }
     // while loop recv msg
     void run() {

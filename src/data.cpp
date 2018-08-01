@@ -324,7 +324,7 @@ void Data::run()
 	}
 }
 
-void getMoveData(int id, unsigned begin, unsigned end, string &srcip, int srcport, string &remotesrcip, int remotesrcport, string &remotedestip, int remotedestport) {
+void Data::getMoveData(int id, unsigned begin, unsigned end, string &srcip, int srcport, string &remotesrcip, int remotesrcport, string &remotedestip, int remotedestport) {
 	//TODO: get data. you should do this in queue. this is for test.
 	list <string> keyList = {"a"};
 	list <string> valueList = {"b"};
@@ -332,18 +332,18 @@ void getMoveData(int id, unsigned begin, unsigned end, string &srcip, int srcpor
 	msgHandler::sendDataMove(id, remotesrcip, remotesrcport, remotedestip, remotedestport, keyList, valueList);
 }
 
-void recvMoveData(int id, string &srcip, int srcport, list <string> &keyList, list <string> &valueList) {
+void Data::recvMoveData(int id, string &srcip, int srcport, list <string> &keyList, list <string> &valueList) {
 	//TODO: recv data. you should do this in queue. this is for test.
 	cout << "[DEBUG DATA] in recvMoveData: get data succeed." << endl;
-	msgHandler::sendDataMoveReturn(id, srcip, srcport, 0);
+	msgHandler::sendDataMoveRet(id, srcip, srcport, 0);
 }
 
-void moveDataReturn(int id, int status) {
+void Data::moveDataReturn(int id, int status) {
 	//TODO: delete data. you should do this in queue. this is for test.
 	cout << "[DEBUG DATA] in moveDataReturn: move Data" << endl;
 	string ip = id_to_host[id].first;
 	int port = id_to_host[id].second;
-	msgHandler::sendMoveReturn(id, ip, port, status);
+	msgHandler::sendMoveRet(id, ip, port, status);
 }
 
 //}}}

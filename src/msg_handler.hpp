@@ -60,7 +60,7 @@ namespace msgHandler {
 
     void sendDataMoveRet(int id, std::string ip, int port, int status);
 
-    void sendMoveRet(int id, std::string ip, int port, int status)
+    void sendMoveRet(int id, std::string ip, int port, int status);
 }
 
 

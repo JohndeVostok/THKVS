@@ -259,7 +259,7 @@ int Driver::addServer(string &hostname, string &ip, int port) {
 				}
 				iter--;
 			}
-			auto iter = nodeMap.upper_bound(nodehash);
+			iter = nodeMap.upper_bound(nodehash);
 			while (suc.size() < THKVS_N) {
 				flag = 0;
 				for (auto &node : suc) {
