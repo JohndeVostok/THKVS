@@ -1,3 +1,6 @@
+#ifndef THKVS_CRC_H
+#define THKVS_CRC_H
+
 #include <string>
 
 using namespace std;
@@ -53,3 +56,5 @@ unsigned getCRC(unsigned char* buf, int nLength)
 unsigned getCRC(string &str) {
 	return getCRC((unsigned char *)str.c_str(), str.size());
 }
+
+#endif
