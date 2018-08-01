@@ -23,6 +23,15 @@ namespace msgHandler {
         Data::getInstance()->put(id, ip, port, key, value);
     }
 
+    void handleSetFlag(std::shared_ptr<OpEnableFlagMessage>& oefm) {
+        Driver::getInstance()->actSetEnableFlag(oefm->flag);
+        int id = oefm->id;
+        std::string ip = oefm->srcip;
+        int port = oefm->srcport;
+        int status = 0;
+        sendSetEnableFlagRet(id, ip, port, status);
+    }
+
     void handleGetRet(std::shared_ptr<OpRetMessage>& opm) {
         int id = opm->id;
         int status = opm->status;
@@ -38,6 +47,13 @@ namespace msgHandler {
         int status = opm->status;
         std::cout << "[DEBUG Handler] After Received PutRet status: " << status << std::endl;
         Driver::getInstance()->putReturn(id, status);
+        return ;
+    }
+
+    void handleSetFlagRet(std::shared_ptr<OpRetMessage>& opm) {
+        int id = opm->id;
+        int status = opm->status;
+        Driver::getInstance()->setEnableFlagReturn(id, status);
         return ;
     }
 
@@ -72,7 +88,16 @@ namespace msgHandler {
                             handlePutRet(oprm);
                             break;
                         }
+                        case m_setflagret: {
+                            handleSetFlagRet(oprm);
+                            break;
+                        }
                     }
+                    break;
+                }
+                case m_setflag: {
+                    std::shared_ptr<OpEnableFlagMessage> oefm = std::dynamic_pointer_cast<OpEnableFlagMessage>(m);
+                    handleSetFlag(oefm);
                     break;
                 }
                 default: {
@@ -104,5 +129,17 @@ namespace msgHandler {
         std::cout << "[DEBUG Handler] Before sendGetRet status: " << status << std::endl;
         OpRetMessage oprm(m_opret, ip, port, m_getret, id, status, value, time_stamp);
         manager::send(std::make_shared<OpRetMessage>(oprm));
+    }
+
+    void sendSetEnableFlag(int id, std::string localip, int localport, std::string ip, int port, bool flag) {
+        OpEnableFlagMessage oefm(m_setflag, ip, port, localip, localport, id, flag);
+        manager::send(std::make_shared<OpEnableFlagMessage>(oefm));
+        return ;
+    }
+
+    void sendSetEnableFlagRet(int id, std::string ip, int port, int status) {
+        OpRetMessage oprm(m_opret, ip, port, m_setflagret, id, status);
+        manager::send(std::make_shared<OpRetMessage>(oprm));
+        return ;
     }
 }

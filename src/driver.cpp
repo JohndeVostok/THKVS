@@ -128,7 +128,8 @@ int Driver::get(string &key) {
 		flag = enableFlag;
 	}
 	if (flag) {
-		getFinish(-1, 2, 0, "");
+		string str = "";
+		getFinish(-1, 2, str);
 	}
 	SyncEntry entry;
 	entry.tot = 0;
@@ -215,11 +216,9 @@ int Driver::actSetEnableFlag(bool flag) {
 
 int Driver::setEnableFlagReturn(int id, int status) {
 	bool flag = 0;
-	unsigned id;
 	{
 		lock_guard <mutex> lck(mu);
 		enableFlagEntry.cnt++;
-		if = enableFlagEntry.id;
 		if (enableFlagEntry.cnt == hostList.size()) flag = 1;
 	}
 	if (flag) {

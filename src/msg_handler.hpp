@@ -14,10 +14,11 @@ namespace msgHandler {
     void handleGet(std::shared_ptr<OpMessage>& opm);
 
     void handlePut(std::shared_ptr<OpMessage>& opm);
+    void handleSetFlag(std::shared_ptr<OpEnableFlagMessage>& oefm);
 
     void handleGetRet(std::shared_ptr<OpRetMessage>& opm);
     void handlePutRet(std::shared_ptr<OpRetMessage>& opm);
-
+    void handleSetFlagRet(std::shared_ptr<OpRetMessage>& opm);
     // while loop recv msg
     void run();
 
@@ -29,6 +30,10 @@ namespace msgHandler {
     void sendPutRet(int id, std::string ip, int port, int status);
 
     void sendGetRet(int id, std::string ip, int port, int status, std::string value, long long time_stamp);
+
+    void sendSetEnableFlag(int id, std::string localip, int localport, std::string ip, int port, bool flag);
+
+    void sendSetEnableFlagRet(int id, std::string ip, int port, int status);
 }
 
 
