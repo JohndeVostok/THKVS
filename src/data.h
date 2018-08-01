@@ -63,6 +63,11 @@ public:
 	void put(int id, string ip, int port, string key, string value);
 	void get_return(int id, string ip, int port, int status, string value, long long time_stamp);
 	void put_return(int id, string ip, int port, int status);
+
+	void getMoveData(int id, unsigned begin, unsigned end, string &srcip, int srcport, string &remotesrcip, int remotesrcport, string &remotedestip, int remotedestport);
+	void recvMoveData(int id, string &srcip, int srcport, list <string> &keyList, list <string> &valueList);
+	void moveDataReturn(int id, int status);
+	
 	void run();
 
 	long long tolonglong(string key);
@@ -71,6 +76,9 @@ public:
 private:
 	unordered_map<string, Value> umap;
 	MsgQueue<KeyValue> que;
+
+	//This is for test.
+	unordered_map <pair <unsigned, pair <string, int>>> id_to_host;
 
 	Data() {};
 	~Data() {};
