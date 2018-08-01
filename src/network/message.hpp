@@ -15,6 +15,8 @@
 #include <map>
 #include <boost/archive/text_iarchive.hpp>
 #include <boost/archive/text_oarchive.hpp>
+#include <boost/serialization/list.hpp>
+
 
 namespace as = boost::asio;
 
@@ -26,7 +28,10 @@ enum m_type {
     m_share = 5,
     m_plainshare = 6,
     m_op = 7,
-    m_opret = 8
+    m_opret = 8,
+    m_join = 9,
+    m_leave = 10,
+    m_setflag = 11,
     // TODO : more type
 };
 
@@ -34,7 +39,8 @@ enum m_op_type {
     m_put = 1,
     m_putret = 2,
     m_get = 3,
-    m_getret = 4
+    m_getret = 4,
+    m_setflagret = 5
 };
 
 class SerialzedMessage {
@@ -141,6 +147,26 @@ private:
     }
 };
 
+class OpEnableFlagMessage : public Message {
+public:
+    int id;
+    bool flag;
+    std::string srcip;
+    int srcport;
+    OpEnableFlagMessage() {}
+    OpEnableFlagMessage(m_type _type, std::string _to_ip, int _port, std::string _srcip, int _srcport, int _id, bool flag)
+            : Message(_type, _to_ip, _port), srcip(_srcip), srcport(_srcport), id(_id) {}
+
+private:
+    friend class boost::serialization::access;
+    template <class Archive>
+    void serialize(Archive& ar, const unsigned int version) {
+        ar & boost::serialization::base_object<Message>(*this);
+        ar & id;
+        ar & srcip;
+        ar & srcport;
+    }
+};
 
 class OpMessage : public Message {
 public:

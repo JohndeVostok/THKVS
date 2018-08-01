@@ -1,7 +1,8 @@
 #ifndef DATA_H
 #define DATA_H
 
-#include "network/msg_queue.hpp"
+#include "msg_queue.hpp"
+#include "hash_cache.h"
 #include <string>
 #include <unordered_map>
 
@@ -42,7 +43,10 @@ public:
 		long long time_stamp;
 	};
 
+	HashCache hs;
 
+	string conkey(int key);
+	string conkey2(long long key);
 	void get(int id, string ip, int port, string key);
 	void put(int id, string ip, int port, string key, string value);
 	void get_return(int id, string ip, int port, int status, string value, long long time_stamp);

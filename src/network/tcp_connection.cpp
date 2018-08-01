@@ -40,6 +40,7 @@ void TcpConnection::handle_body(const boost::system::error_code& error) {
     }
     std::cout << "[DEBUG] started handle body" << std::endl;
     std::shared_ptr<Message> msgToRecv;
+    read_msg.body()[read_msg.body_length()] = 0;
     std::istringstream istream(read_msg.body());
     std::cout << "[DEBUG] serialized message: " << read_msg.body() << std::endl;
     boost::archive::text_iarchive ia(istream);
@@ -60,6 +61,12 @@ void TcpConnection::handle_body(const boost::system::error_code& error) {
             OpRetMessage oprM;
             ia >> oprM;
             msgToRecv = std::make_shared<OpRetMessage>(oprM);
+            break;
+        }
+        case m_setflag: {
+            OpEnableFlagMessage oefM;
+            ia >> oefM;
+            msgToRecv = std::make_shared<OpEnableFlagMessage>(oefM);
             break;
         }
         default: {
@@ -101,6 +108,7 @@ void TcpConnection::write_message() {
     std::shared_ptr<TextMessage> tm;
     std::shared_ptr<OpMessage> opm;
     std::shared_ptr<OpRetMessage> oprm;
+    std::shared_ptr<OpEnableFlagMessage> oefm;
     switch (msgToSend->type) {
         case m_text: {
             tm = std::dynamic_pointer_cast<TextMessage>(msgToSend);
@@ -115,6 +123,11 @@ void TcpConnection::write_message() {
         case m_opret: {
             oprm = std::dynamic_pointer_cast<OpRetMessage>(msgToSend);
             archive << (*oprm);
+            break;
+        }
+        case m_setflag: {
+            oefm = std::dynamic_pointer_cast<OpEnableFlagMessage>(msgToSend);
+            archive << (*oefm);
             break;
         }
         default: {
