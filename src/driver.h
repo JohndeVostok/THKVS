@@ -55,7 +55,8 @@ private:
 	bool enableFlag = 0;
 	condition_variable condEntries, condServer, condEnable;
 	mutex mu;
-	atomic <int> serverCnt(0), enableCnt(0);
+	atomic <int> serverCnt{0};
+	atomic <int> enableCnt{0};
 
 	Driver();
 	~Driver();
@@ -81,8 +82,8 @@ public:
 	int setEnableFlagFinish(int id, int status);
 	int addServer(string &hostname, string &ip, int port);
 	int actAddServer(string &hostname, string &ip, int port);
-	int addServerReturn();
-	void test();
+	int addServerReturn(int id, int status);
+	int test();
 };
 
 #endif

@@ -32,6 +32,19 @@ namespace msgHandler {
         sendSetEnableFlagRet(id, ip, port, status);
     }
 
+    void handleAddServer(std::shared_ptr<OpAddServerMessage> &oasm) {
+        std::string hostname = oasm->hostname;
+        std::string hostip = oasm->hostip;
+        int hostport = oasm->hostport;
+        Driver::getInstance()->actAddServer(hostname, hostip, hostport);
+        int id = oasm->id;
+        std::string ip = oasm->srcip;
+        int port = oasm->srcport;
+        int status = 0;
+        sendAddServerRet(id, ip, port, status);
+    }
+
+
     void handleGetRet(std::shared_ptr<OpRetMessage>& opm) {
         int id = opm->id;
         int status = opm->status;
@@ -57,6 +70,12 @@ namespace msgHandler {
         return ;
     }
 
+    void handleAddServerRet(std::shared_ptr<OpRetMessage> &opm) {
+        int id = opm->id;
+        int status = opm->status;
+        Driver::getInstance()->addServerReturn(id, status);
+        return ;
+    }
     // while loop recv msg
     void run() {
         std::shared_ptr<Message> m;
@@ -92,12 +111,21 @@ namespace msgHandler {
                             handleSetFlagRet(oprm);
                             break;
                         }
+                        case m_addserverret: {
+                            handleAddServerRet(oprm);
+                            break;
+                        }
                     }
                     break;
                 }
                 case m_setflag: {
                     std::shared_ptr<OpEnableFlagMessage> oefm = std::dynamic_pointer_cast<OpEnableFlagMessage>(m);
                     handleSetFlag(oefm);
+                    break;
+                }
+                case m_addserver: {
+                    std::shared_ptr<OpAddServerMessage> oasm = std::dynamic_pointer_cast<OpAddServerMessage>(m);
+                    handleAddServer(oasm);
                     break;
                 }
                 default: {
@@ -142,4 +170,19 @@ namespace msgHandler {
         manager::send(std::make_shared<OpRetMessage>(oprm));
         return ;
     }
+
+    void sendAddServer(int id, std::string localip, int localport, std::string ip, int port, std::string hostname,
+                       std::string hostip, int hostport) {
+        OpAddServerMessage oasm(m_addserver, ip, port, localip, localport, id, hostname, hostip, hostport);
+        manager::send(std::make_shared<OpAddServerMessage>(oasm));
+        return ;
+    }
+
+    void sendAddServerRet(int id, std::string ip, int port, int status) {
+        OpRetMessage oprm(m_opret, ip, port, m_addserverret, id, status);
+        manager::send(std::make_shared<OpRetMessage>(oprm));
+        return ;
+    }
+
+
 }

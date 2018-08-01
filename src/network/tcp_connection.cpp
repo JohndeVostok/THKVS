@@ -69,6 +69,12 @@ void TcpConnection::handle_body(const boost::system::error_code& error) {
             msgToRecv = std::make_shared<OpEnableFlagMessage>(oefM);
             break;
         }
+        case m_addserver: {
+            OpAddServerMessage oasM;
+            ia >> oasM;
+            msgToRecv = std::make_shared<OpAddServerMessage>(oasM);
+            break;
+        }
         default: {
             break;
         }
@@ -109,6 +115,7 @@ void TcpConnection::write_message() {
     std::shared_ptr<OpMessage> opm;
     std::shared_ptr<OpRetMessage> oprm;
     std::shared_ptr<OpEnableFlagMessage> oefm;
+    std::shared_ptr<OpAddServerMessage> oasm;
     switch (msgToSend->type) {
         case m_text: {
             tm = std::dynamic_pointer_cast<TextMessage>(msgToSend);
@@ -128,6 +135,11 @@ void TcpConnection::write_message() {
         case m_setflag: {
             oefm = std::dynamic_pointer_cast<OpEnableFlagMessage>(msgToSend);
             archive << (*oefm);
+            break;
+        }
+        case m_addserver: {
+            oasm = std::dynamic_pointer_cast<OpAddServerMessage>(msgToSend);
+            archive << (*oasm);
             break;
         }
         default: {

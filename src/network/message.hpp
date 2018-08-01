@@ -32,6 +32,9 @@ enum m_type {
     m_join = 9,
     m_leave = 10,
     m_setflag = 11,
+    m_move = 12,
+    m_datamove = 13,
+    m_addserver = 14
     // TODO : more type
 };
 
@@ -40,7 +43,10 @@ enum m_op_type {
     m_putret = 2,
     m_get = 3,
     m_getret = 4,
-    m_setflagret = 5
+    m_setflagret = 5,
+    m_moveret = 6,
+    m_datamoveret = 7,
+    m_addserverret = 8
 };
 
 class SerialzedMessage {
@@ -144,6 +150,34 @@ private:
     void serialize(Archive& ar, const unsigned int version) {
         ar & boost::serialization::base_object<Message>(*this);
         ar & msg;
+    }
+};
+
+class OpAddServerMessage : public Message {
+public:
+    int id;
+    std::string srcip;
+    int srcport;
+    std::string hostname;
+    std::string hostip;
+    int hostport;
+    OpAddServerMessage() {}
+    OpAddServerMessage(m_type _type, std::string _to_ip, int _port, std::string _srcip, int _srcport,
+                       int _id, std::string _hostname, std::string _hostip, int _hostport)
+            : Message(_type, _to_ip, _port), srcip(_srcip), srcport(_srcport), id(_id), hostname(_hostname),
+              hostip(_hostip), hostport(_hostport) {}
+
+private:
+    friend class boost::serialization::access;
+    template <class Archive>
+    void serialize(Archive& ar, const unsigned int version) {
+        ar & boost::serialization::base_object<Message>(*this);
+        ar & id;
+        ar & srcip;
+        ar & srcport;
+        ar & hostname;
+        ar & hostip;
+        ar & hostport;
     }
 };
 

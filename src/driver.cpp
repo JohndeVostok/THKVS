@@ -201,22 +201,26 @@ int Driver::setEnableFlag(bool flag) {
 		id = enableFlagEntry.id = opid++;
 		enableFlagEntry.cnt = 0;
 	}
-	for (auto &host : hostList) {
+	enableCnt.store(hostList.size());
+	std::cout << "[DEBUG DRIVER] in setEnableFlag: enableCnt: " << enableCnt.load() << std::endl;
+    for (auto &host : hostList) {
 		msgHandler::sendSetEnableFlag(id, localhost.ip, localhost.port, host.ip, host.port, flag);
 	}
 	unique_lock <mutex> lck(mu);
-	condEnable.wait(lck, [this]() {enableCnt.load() == tmpHost.size()});
+	condEnable.wait(lck, [this]() {return enableCnt.load() == 0;});
 }
 
 int Driver::actSetEnableFlag(bool flag) {
 	unique_lock <mutex> lck(mu);
-	condEntris.wait(lck, [this]() {return entries.empty();});
+	condEntries.wait(lck, [this]() {return entries.empty();});
 	enableFlag = flag;
-	std::cout << "[DEBUG DRIVER] int actSetEnableFlag: enableFlag: " << enableFlag << std::endl;
+	std::cout << "[DEBUG DRIVER] in actSetEnableFlag: enableFlag: " << enableFlag << std::endl;
 }
 
 int Driver::setEnableFlagReturn(int id, int status) {
-	enableCnt++;
+	enableCnt--;
+	std::cout << "[DEBUG DRIVER] in setEnableFlagReturn: enableCnt: " << enableCnt.load() << std::endl;
+
 	condEnable.notify_all();
 	return 0;
 }
@@ -224,17 +228,21 @@ int Driver::setEnableFlagReturn(int id, int status) {
 int Driver::addServer(string &hostname, string &ip, int port) {
 	setEnableFlag(1);
 	vector <Host> tmp;
-	serverCnt.store(0);
 	{
 		lock_guard <mutex> lck(mu);
 		tmp = hostList;
+		serverCnt.store(tmp.size());
 		unsigned id = opid++;
-		for (auto &host : tmpHost) {
+		for (auto &host : tmp) {
 			msgHandler::sendAddServer(id, localhost.ip, localhost.port, host.ip, host.port, hostname, ip, port);
 		}
 	}
-	unique_lock <mutex> lck(mu);
-	condServer.wait(lck, [this]() {serverCnt.load() == tmpHost.size()});
+	std::cout << "[DEBUG DRIVER] before condServer.wait" << std::endl;
+    {
+        unique_lock<mutex> lck(mu);
+        condServer.wait(lck, [this]() { return serverCnt.load() == 0; });
+        std::cout << "[DEBUG DRIVER] after condServer.wait" << std::endl;
+    }
 	setEnableFlag(0);
 }
 
@@ -250,7 +258,7 @@ int Driver::actAddServer(string &hostname, string &ip, int port) {
 	ostringstream buf;
 	string tmpstr;
 	unsigned nodehash;
-	for (int i = 0; i < NODECOPY; j++) {
+	for (int i = 0; i < NODECOPY; i++) {
 		buf.str("");
 		buf << host.hostname << "#" << i;
 		tmpstr = buf.str();
@@ -263,7 +271,8 @@ int Driver::actAddServer(string &hostname, string &ip, int port) {
 }
 
 int Driver::addServerReturn(int id, int status) {
-	serverCnt++;
+	serverCnt--;
+	std::cout << "[DEBUG DRIVER] in addServerReturn: serverCnt: " << serverCnt.load() << std::endl;
 	condServer.notify_all();
 	return 0;
 }

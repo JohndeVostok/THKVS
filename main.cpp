@@ -60,6 +60,13 @@ int main() {
             } else {
                 Driver::getInstance()->setEnableFlag(true);
             }
+        } else if (op == "add") {
+            std::string hostname, ip;
+            int port;
+            std::cin >> hostname >> ip >> port;
+            Driver::getInstance()->addServer(hostname, ip, port);
+        } else if (op == "test") {
+            Driver::getInstance()->test();
         }
     }
     std::string key = "sb", value = "caonima";
