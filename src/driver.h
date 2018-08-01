@@ -67,6 +67,10 @@ public:
 	int get(string &key);
 	int getReturn(int id, int status, long long timestamp, string &value);
 	int getFinish(int id, int status, string &value);
+	int setEndbleFlag(bool flag);
+	int actSetEnableFlag(bool flag);
+	int setEnableFlagReturn(int id, int status);
+	int setEnableFlagFinish(int id, int status);
 	void test();
 };
 

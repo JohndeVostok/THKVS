@@ -65,9 +65,10 @@ int Driver::put(string &key, string &value) {
 	SyncEntry entry;
 	entry.tot = 0;
 	entry.suc = 0;
+	unsigned id;
 	{
 		lock_guard <mutex> lck(mu);
-		unsigned id = opid++;
+		id = opid++;
 		entries.emplace(id, entry);
 	}
 	vector <int> hosts;
@@ -116,9 +117,10 @@ int Driver::get(string &key) {
 	SyncEntry entry;
 	entry.tot = 0;
 	entry.suc = 0;
-	{	
+	unsigned id;
+	{
 		lock_guard <mutex> lck(mu);
-		unsigned id = opid++;
+		id = opid++;
 		entries.emplace(id, entry);
 	}
 	std::cout << "[DEBUG DRIVER] Before Get id: " << id << std::endl;
