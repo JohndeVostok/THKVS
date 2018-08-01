@@ -31,4 +31,6 @@
 	handleAddServerReturn()
 		tell Driver;
 #### data.
-	
+	getMoveData(id, begin, end, source_ip, source_port, dest_ip, dest_port):
+		call sendDataMove();
+	recvMoveData(id, vector of )

@@ -117,6 +117,7 @@ int Driver::putReturn(int id, int status) {
 }
 
 int Driver::putFinish(int id, int status) {
+	cout << "[DEBUG DRIVER] in putFinish id: " << id << " status: " << status << endl;
 }
 
 int Driver::get(string &key) {
@@ -182,7 +183,10 @@ int Driver::getReturn(int id, int status, long long timestamp, string &value) {
 }
 
 int Driver::getFinish(int id, int status, string &value) {
+	cout << "[DEBUG DRIVER] in getFinish id: " << id << " status: " << status << " value: " << value << endl;
 }
+
+//Fault tolerance
 
 int Driver::setEnableFlag(bool flag) {
 	unsigned id;
@@ -221,6 +225,25 @@ int Driver::addServer(string &hostname, string &ip, int port) {
 	if (flag) {
 		return 1;
 	}
+
+	vector <pair<>> pre, suc;
+	ostringstream buf;
+	string tmpstr;
+	unsigned nodehash;
+	for (int i = 0; i < NODECOPY; i++) {
+		buf.str("");
+		buf << hostname << "#" << i;
+		tmpstr = buf.str();
+		nodehash = hash(tmpstr);
+		suc.clear();
+		if (!nodeMap.count(nodehash)) {
+			//TODO: get suc;
+		}
+		for (int i = 0; i < THKVS_N; i++) {
+			
+		}
+	}
+	
 	setEnableFlag(1);
 	vector <Host> tmp;
 	{
@@ -237,6 +260,8 @@ int Driver::addServer(string &hostname, string &ip, int port) {
         condServer.wait(lck, [this]() { return serverCnt.load() == 0; });
     }
 	setEnableFlag(0);
+	cout << "[DEBUG DRIVER] in removeServer" << endl;
+	return 0;
 }
 
 int Driver::actAddServer(string &hostname, string &ip, int port) {
@@ -309,6 +334,7 @@ int Driver::removeServer(string &hostname) {
         });
     }
 	setEnableFlag(0);
+	cout << "[DEBUG DRIVER] in removeServer" << endl;
 }
 
 int Driver::actRemoveServer(string &hostname) {
@@ -348,6 +374,7 @@ int Driver::removeServerReturn(int id, int status) {
 
 int Driver::test() {
 	for (auto &host : hostList) {
+		cout << "[DEBUG DRIVER] at test: hostname: " << host.hostname << " ip: " << host.ip << " port: " << host.port << endl;
 	}
 }
 
