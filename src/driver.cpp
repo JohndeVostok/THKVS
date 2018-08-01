@@ -128,7 +128,7 @@ int Driver::get(string &key) {
 		flag = enableFlag;
 	}
 	if (flag) {
-		getFinish(-1, 2);
+		getFinish(-1, 2, 0, "");
 	}
 	SyncEntry entry;
 	entry.tot = 0;
@@ -203,7 +203,7 @@ int Driver::setEnableFlag(bool flag) {
 		enableFlagEntry.cnt = 0;
 	}
 	for (auto &host : hostList) {
-		MsgHandler::sendSetEnableFlag(id, localhost.ip, localhost.port, host.ip, host.port, flag);
+		msgHandler::sendSetEnableFlag(id, localhost.ip, localhost.port, host.ip, host.port, flag);
 	}
 }
 
@@ -215,13 +215,15 @@ int Driver::actSetEnableFlag(bool flag) {
 
 int Driver::setEnableFlagReturn(int id, int status) {
 	bool flag = 0;
+	unsigned id;
 	{
 		lock_guard <mutex> lck(mu);
 		enableFlagEntry.cnt++;
+		if = enableFlagEntry.id;
 		if (enableFlagEntry.cnt == hostList.size()) flag = 1;
 	}
 	if (flag) {
-		setEnableFlagFinish();
+		setEnableFlagFinish(id, 0);
 	}
 	return 0;
 }
