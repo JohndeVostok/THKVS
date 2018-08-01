@@ -1,4 +1,4 @@
-#include "crc."
+#include "crc.h"
 
 unsigned getCRC(unsigned char* buf, int nLength) {
 	if (nLength < 1) {
@@ -12,7 +12,7 @@ unsigned getCRC(unsigned char* buf, int nLength) {
 	return crc;  
 }
 
-unsigned getCRC(string &str); {
+unsigned getCRC(string &str) {
 	return getCRC((unsigned char *)str.c_str(), str.size());
 }
 
