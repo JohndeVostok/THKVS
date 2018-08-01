@@ -196,13 +196,14 @@ void Driver::test() {
 }
 
 int Driver::setEnableFlag(bool flag) {
+	unsigned id;
 	{
 		lock_guard <mutex> lck(mu);
-		enableFlagEntry.id = opid++;
+		id = enableFlagEntry.id = opid++;
 		enableFlagEntry.cnt = 0;
 	}
 	for (auto &host : hostList) {
-		//sendmessage();
+		MsgHandler::sendSetEnableFlag(id, localhost.ip, localhost.port, host.ip, host.port, flag);
 	}
 }
 
