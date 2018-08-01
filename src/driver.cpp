@@ -65,10 +65,11 @@ int Driver::put(string &key, string &value) {
 	SyncEntry entry;
 	entry.tot = 0;
 	entry.suc = 0;
-	mu.lock();
-	unsigned id = opid++;
-	entries.emplace(id, entry);
-	mu.unlock();
+	{
+		lock_guard <mutex> lck(mu);
+		unsigned id = opid++;
+		entries.emplace(id, entry);
+	}
 	vector <int> hosts;
 	getHosts(key, hosts);
 
@@ -84,21 +85,23 @@ int Driver::putReturn(int id, int status) {
     std::cout << "[DEBUG DRIVER] Put Return id: " << id << " status: " << status << std::endl;
 
     int flag = 0;
-	mu.lock();
-	if (entries.find(id) == entries.end()) {
-		flag = 1;
-	}
-	if (!flag) {
-		auto&& entry = entries[id];
-		entry.tot++;
-		entry.suc += status ^ 1;
-        std::cout << "[DEBUG DRIVER] In putReturn: " << "tot: " << entry.tot << " suc: " << entry.suc << std::endl;
-		if (entry.suc >= THKVS_W || entry.tot - entry.suc > THKVS_N - THKVS_W) {
-			entries.erase(id);
-			flag = 2 + status;
+	{
+		lock_guard <mutex> lck(mu);
+		if (entries.find(id) == entries.end()) {
+			flag = 1;
+		}
+		if (!flag) {
+			auto&& entry = entries[id];
+			entry.tot++;
+			entry.suc += status ^ 1;
+    	    std::cout << "[DEBUG DRIVER] In putReturn: " << "tot: " << entry.tot << " suc: " << entry.suc << std::endl;
+			if (entry.suc >= THKVS_W || entry.tot - entry.suc > THKVS_N - THKVS_W) {
+				entries.erase(id);
+				flag = 2 + status;
+			}
 		}
 	}
-	mu.unlock();
+	cond.notify_one();
 	if (flag > 1) {
 		putFinish(id, flag - 2);
 	}
@@ -113,10 +116,11 @@ int Driver::get(string &key) {
 	SyncEntry entry;
 	entry.tot = 0;
 	entry.suc = 0;
-	mu.lock();
-	unsigned id = opid++;
-	entries.emplace(id, entry);
-	mu.unlock();
+	{	
+		lock_guard <mutex> lck(mu);
+		unsigned id = opid++;
+		entries.emplace(id, entry);
+	}
 	std::cout << "[DEBUG DRIVER] Before Get id: " << id << std::endl;
 	vector <int> hosts;
 	getHosts(key, hosts);
@@ -130,7 +134,8 @@ int Driver::getReturn(int id, int status, long long timestamp, string &value) {
     std::cout << "[DEBUG DRIVER] Get Return id: " << id << " status: " << status << "value: " << value << std::endl;
 	int flag = 0;
 	string str;
-	mu.lock();
+{
+	std::lock_guard<std::mutex> lck(mu);
 	if (entries.find(id) == entries.end()) {
 		flag = 1;
 	}
@@ -154,8 +159,8 @@ int Driver::getReturn(int id, int status, long long timestamp, string &value) {
 		}
 	}
 
-	mu.unlock();
-
+}
+	cond.notify_one();
     if (flag > 1) {
 		getFinish(id, flag - 2, str); // entry.timestamp. entry.value;
 	}
@@ -170,5 +175,10 @@ void Driver::test() {
 	for (auto &host : hostList) {
 		cout << host.host << host.count << endl;
 	}
+}
+
+void Driver::actDisable() {
+	unique_lock <mutex> lck(mu);
+	cond.wait(lck, [this]() {return entries.empty();});
 }
 

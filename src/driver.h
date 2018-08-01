@@ -10,6 +10,7 @@
 #include <iostream>
 #include <fstream>
 #include <sstream>
+#include <condition_variable>
 
 using namespace std;
 
@@ -47,6 +48,7 @@ private:
 
 	//Sync
 	unsigned opid = 0;
+	condition_variable cond;
 	mutex mu;
 
 	unsigned hash(string &str);
