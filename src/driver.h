@@ -51,12 +51,13 @@ private:
 	EnableFlagEntry enableFlagEntry;
 
 	//Sync
-	unsigned opid = 0;
 	bool enableFlag = 0;
-	condition_variable condEntries, condServer, condEnable;
+	condition_variable condEntries, condServer, condEnable, condMove;
 	mutex mu;
+	atomic <unsigned> opid{0};
 	atomic <int> serverCnt{0};
 	atomic <int> enableCnt{0};
+	atomic <int> moveCnt{0};
 
 	Driver();
 	~Driver();
@@ -86,6 +87,7 @@ public:
 	int removeServer(string &hostname);
 	int actRemoveServer(string &hostname);
 	int removeServerReturn(int id, int status);
+	int moveReturn(int id, int status);
 	int test();
 };
 

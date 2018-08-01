@@ -43,7 +43,7 @@ int Driver::getHosts(string &key, vector <int> &hosts) {
 	}
 	unsigned keyhash = hash(key);
 	auto iter = nodeMap.upper_bound(keyhash);
-	while (hosts.size() < 3) {
+	while (hosts.size() < THKVS_N) {
 		int flag = 0;
 		for (auto &t : hosts) {
 			if (t == iter->second) {
@@ -54,10 +54,9 @@ int Driver::getHosts(string &key, vector <int> &hosts) {
 			hosts.emplace_back(iter->second);
 			hostList[iter->second].count++;
 		}
+		iter++;
 		if (iter == nodeMap.end()) {
 			iter = nodeMap.begin();
-		} else {
-			iter++;
 		}
 	}
 	return 0;
@@ -226,23 +225,73 @@ int Driver::addServer(string &hostname, string &ip, int port) {
 		return 1;
 	}
 
-	vector <pair<>> pre, suc;
+	vector <pair <unsigned, int>> pre, suc;
 	ostringstream buf;
 	string tmpstr;
 	unsigned nodehash;
+	moveCnt.store(0);
 	for (int i = 0; i < NODECOPY; i++) {
 		buf.str("");
 		buf << hostname << "#" << i;
 		tmpstr = buf.str();
 		nodehash = hash(tmpstr);
-		suc.clear();
 		if (!nodeMap.count(nodehash)) {
-			//TODO: get suc;
-		}
-		for (int i = 0; i < THKVS_N; i++) {
-			
+			moveCnt++;
+			pre.clear();
+			suc.clear();
+			auto iter = nodeMap.upper_bound(nodehash);
+			if (iter == nodeMap.begin()) {
+				iter = nodeMap.end();
+			}
+			iter--;
+			while (pre.size() < THKVS_N) {
+				flag = 0;
+				for (auto &node : pre) {
+					if (iter->second == node.second) {
+						flag = 1;
+					}
+				}
+				if (!flag) {
+					pre.emplace_back(iter->first, iter->second);
+				}
+				if (iter == nodeMap.begin()) {
+					iter = nodeMap.end();
+				}
+				iter--;
+			}
+			auto iter = nodeMap.upper_bound(nodehash);
+			while (suc.size() < THKVS_N) {
+				flag = 0;
+				for (auto &node : suc) {
+					if (iter->second == node.second) {
+						flag = 1;
+					}
+				}
+				if (!flag) {
+					suc.emplace_back(iter->first, iter->second);
+				}
+				iter++;
+				if (iter == nodeMap.end()) {
+					iter = nodeMap.begin();
+				}
+			}
+			unsigned hashend = nodehash, hashbegin;
+			for (int i = 0; i < THKVS_N; i++) {
+				opid++;
+				unsigned id = opid.load();
+				hashbegin = pre[i].first;
+				auto &srchost = hostList[suc[THKVS_N - i - 1].second];
+				msgHandler::sendMove(id, localhost.ip, localhost.port, srchost.ip, srchost.port, ip, port, hashbegin, hashend);
+			}
 		}
 	}
+
+    {
+        unique_lock<mutex> lck(mu);
+        condMove.wait(lck, [this](){
+        	return moveCnt.load() == 0;
+        });
+    }
 	
 	setEnableFlag(1);
 	vector <Host> tmp;
@@ -272,13 +321,12 @@ int Driver::actAddServer(string &hostname, string &ip, int port) {
 	tmp.port = port;
 	hostList.emplace_back(tmp);
 
-	auto &host = hostList.back();
 	ostringstream buf;
 	string tmpstr;
 	unsigned nodehash;
 	for (int i = 0; i < NODECOPY; i++) {
 		buf.str("");
-		buf << host.hostname << "#" << i;
+		buf << hostname << "#" << i;
 		tmpstr = buf.str();
 		nodehash = hash(tmpstr);
 		if (!nodeMap.count(nodehash)) {
@@ -369,6 +417,12 @@ int Driver::actRemoveServer(string &hostname) {
 int Driver::removeServerReturn(int id, int status) {
 	serverCnt--;
 	condServer.notify_all();
+	return 0;
+}
+
+int Driver::moveReturn(int id, int status) {
+	moveCnt--;
+	condMove.notify_all();
 	return 0;
 }
 
