@@ -83,6 +83,9 @@ public:
 	int addServer(string &hostname, string &ip, int port);
 	int actAddServer(string &hostname, string &ip, int port);
 	int addServerReturn(int id, int status);
+	int removeServer(string &hostname);
+	int actRemoveServer(string &hostname);
+	int removeServerReturn(int id, int status);
 	int test();
 };
 

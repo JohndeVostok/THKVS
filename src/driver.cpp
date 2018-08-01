@@ -226,6 +226,15 @@ int Driver::setEnableFlagReturn(int id, int status) {
 }
 
 int Driver::addServer(string &hostname, string &ip, int port) {
+	bool flag;
+	{
+		lock_guard <mutex> lck(mu);
+		flag = enableFlag;
+	}
+	if (flag) {
+		cout << "[DEBUG DRIVER] in addServer trap disabled." << endl;
+		return 1;
+	}
 	setEnableFlag(1);
 	vector <Host> tmp;
 	{
@@ -273,6 +282,86 @@ int Driver::actAddServer(string &hostname, string &ip, int port) {
 int Driver::addServerReturn(int id, int status) {
 	serverCnt--;
 	std::cout << "[DEBUG DRIVER] in addServerReturn: serverCnt: " << serverCnt.load() << std::endl;
+	condServer.notify_all();
+	return 0;
+}
+
+int Driver::removeServer(string &hostname) {
+	bool flag;
+	{
+		lock_guard <mutex> lck(mu);
+		flag = enableFlag;
+	}
+	if (flag) {
+		cout << "[DEBUG DRIVER] in removeServer trap disabled." << endl;
+		return 1;
+	}
+	vector <Host> tmp;
+	flag = 1;
+	{
+		lock_guard <mutex> lck(mu);
+		for (auto &host : hostList) {
+			if (host.hostname == hostname) {
+				flag = 0;
+			} else {
+				tmp.emplace(host);
+			}
+		}
+	}
+	if (flag) {
+		cout << "[DEBUG DRIVER] in removeServer trap disabled." << endl;
+		return 1;
+	}
+	setEnableFlag(1);
+	{
+		lock_guard <mutex> lck(mu);
+		serverCnt.store(tmp.size());
+		unsigned id = opid++;
+		for (auto &host : tmp) {
+			msgHandler::sendAddServer(id, localhost.ip, localhost.port, host.ip, host.port, hostname);
+		}
+	}
+    {
+        unique_lock<mutex> lck(mu);
+        condServer.wait(lck, [this]() {
+        	return serverCnt.load() == 0;
+        });
+    }
+	setEnableFlag(0);
+}
+
+int Driver::actRemoveServer(string &hostname) {
+	lock_guard <mutex> lck(mu);
+	vector <Host> tmp = hostList;
+	hostList.clear();
+	for (auto &host : tmp) {
+		if (host.hostname != hostname) {
+			hostList.emplace(host);
+		}
+	}
+
+	for (int i = 0; i < hostList.size(); i++) {
+		auto &host = hostList[i];
+		ostringstream buf;
+		string tmpstr;
+		unsigned nodehash;
+		for (int j = 0; j < (NODECOPY); j++) {
+			buf.str("");
+			buf << host.hostname << "#" << j;
+			tmpstr = buf.str();
+			nodehash = hash(tmpstr);
+			if (!nodeMap.count(nodehash)) {
+				nodeMap.emplace(nodehash, i);
+			}
+		}
+	}
+
+	return 0;
+}
+
+int Driver::removeServerReturn(int id, int status) {
+	serverCnt--;
+	std::cout << "[DEBUG DRIVER] in removeServerReturn: serverCnt: " << serverCnt.load() << std::endl;
 	condServer.notify_all();
 	return 0;
 }
