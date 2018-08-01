@@ -1,11 +1,6 @@
-#include "driver.h"
-#include <sstream>
+#include "btree.h"
 
 int main() {
-	string key, value;
-	key = "a";
-	value = "aa";
-	Driver::getInstance()->put(key, value);
-	Driver::getInstance()->get(key);
-	return 0;
+	Btree bt;
+	bt.test();
 }
