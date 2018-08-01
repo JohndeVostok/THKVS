@@ -281,6 +281,16 @@ int Driver::addServer(string &hostname, string &ip, int port) {
 					iter = nodeMap.begin();
 				}
 			}
+			cout << "[DEBUG DRIVER] in addServer pre: ";
+			for (auto p : pre) {
+				cout << p.second << " ";
+			}
+			cout << endl;
+			cout << "[DEBUG DRIVER] in addServer suc: ";
+			for (auto p : suc) {
+				cout << p.second << " ";
+			}
+			cout << endl;
 			unsigned hashend = nodehash, hashbegin;
 			for (int i = 0; i < THKVS_N; i++) {
 				opid++;
