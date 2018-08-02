@@ -26,9 +26,7 @@ void send_thread(std::shared_ptr<as::io_service>& io_service) {
 }
 
 int main() {
-    std::cout << "Hello, World!" << std::endl;
-    unsigned concurentThreadsSupported = std::thread::hardware_concurrency();
-    std::cout << concurentThreadsSupported << std::endl;
+    std::cout << "THKVS" << std::endl;
 
     std::shared_ptr<as::io_service> io_service(new as::io_service);
     //TcpServer server(*io_service);
@@ -38,13 +36,25 @@ int main() {
     server = new TcpServer(*io_service, portNum);
     auto thread_server = std::thread(&startIO, std::ref(io_service));
     auto thread_write = std::thread(&send_thread, std::ref(io_service));
-    auto thread_handler = std::thread(&msgHandler::run);
     auto thread_data = std::thread(&Data::run, Data::getInstance());
     thread_server.detach();
-    thread_handler.detach();
     thread_data.detach();
     thread_write.detach();
 
+    unsigned concurentThreadsSupported = std::thread::hardware_concurrency() - 10;
+    unsigned nthread = concurentThreadsSupported >> 1;
+
+    for (int i = 0; i < nthread; i++) {
+		auto thread_handler = std::thread(&msgHandler::run);
+		thread_handler.detach();
+		auto thread_worker = std::thread(&Worker::run);
+		thread_worker.detach();
+    }
+
+	Worker::insertPut("sb", "caonima");
+	Worker::insertGet("sb");
+	Worker::insertGet("sc");
+	/*
     while (true) {
         std::string op, key, value;
         std::cin >> op;
@@ -77,7 +87,7 @@ int main() {
     std::string key = "sb", value = "caonima";
     Driver::getInstance()->put(key, value);
     Driver::getInstance()->get(key);
-
+	*/
     /*
     test ptest;
     auto thread_test = std::thread(&test::run, &ptest);
