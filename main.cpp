@@ -6,6 +6,7 @@
 #include "src/msg_handler.hpp"
 #include "src/data.h"
 #include "src/driver.h"
+#include "worker.h"
 namespace as = boost::asio;
 
 
