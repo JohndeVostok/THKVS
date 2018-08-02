@@ -20,8 +20,9 @@ namespace Worker {
     MsgQueue<std::shared_ptr<job> > jobQue;
     MsgQueue<std::shared_ptr<Result> > resQue;
     std::unordered_map<int, int> jobIdMap;
-    std::atomic<int> jobId{0};
-    std::mutex mu;
+    std::atomic<int> jobId{0}, testCnt{0};
+    std::condition_variable testCond;
+    std::mutex mu, testMu;
 
     void run() {
         while (true) {
@@ -53,9 +54,11 @@ namespace Worker {
                         jId = jobIdMap[driverId];
                         jobIdMap.erase(driverId);
                     }
-                    std::cout << "[DEBUG WORKER] in result: " << driverId << " " << jId << " " << J->status << " " << J->value << std::endl;
+                    std::cout << "[TEST] result: " << driverId << " " << jId << " " << J->status << " " << J->value << std::endl;
                     Result R(jId, J->status, J->value);
                     resQue.push(std::make_shared<Result>(R));
+                    testCnt--;
+                    testCond.notify_all();
                     break;
                 }
             }

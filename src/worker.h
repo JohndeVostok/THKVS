@@ -39,8 +39,9 @@ namespace Worker {
     extern MsgQueue<std::shared_ptr<job> > jobQue;
     extern MsgQueue<std::shared_ptr<Result> > resQue;
     extern std::unordered_map<int, int> jobIdMap;
-    extern std::atomic<int> jobId;
-    extern std::mutex mu;
+    extern std::atomic<int> jobId, testCnt;
+    extern std::condition_variable testCond;
+    extern std::mutex mu, testMu;
 
     void run();
 

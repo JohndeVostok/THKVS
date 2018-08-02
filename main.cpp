@@ -58,15 +58,22 @@ int main() {
 	std::cin >> op;
 
 	if (op == "test") {
-		std::cout << "[TEST] throughput(put:get 1:0)"
+		std::cout << "[TEST] throughput(put:get 1:0) started."
+		testCnt.store(10000);
 		auto starttime = std::chrono::system_clock::now();
 		for (int i = 0; i < 10000; i++) {
-		    std::cout << "[DEBUG MAIN] put " << i << " times" << std::endl;
+			std::cout << "[DEBUG MAIN] put: " << i << " times" << std::endl;
 			Worker::insertPut("a", "a");
+		}
+		{
+        	unique_lock <mutex> lck(testMu);
+        	testCond.wait(lck, [this]() {
+        		return testCnt.load() == 0;
+        	});
 		}
 		auto endtime = std::chrono::system_clock::now();
 		std::chrono::duration <double> d = endtime - starttime;
-		cout << d.count() << endl;
+		cout << "[TEST] test result: " << d.count() << endl;
 
 /*
 	    while (true) {
