@@ -7,7 +7,6 @@
 #include "src/data.h"
 #include "src/driver.h"
 #include "src/worker.h"
-#include <cstdlib>
 
 namespace as = boost::asio;
 
@@ -59,7 +58,14 @@ int main() {
 	std::cin >> op;
 
 	if (op == "test") {
-	    while (true) {
+		auto starttime = std::chrono::system_clock::now();
+		for (int i = 0; i < 100000; i++) {
+			Worker::insertPut("a", "a");
+		}
+		auto endtime = std::chrono::system_clock::now();
+		std::chrono::duration <double> d = endtime - starttime;
+		cout << d.count() << endl;
+/*	    while (true) {
             std::string op, key, value;
             std::cin >> op;
             if (op == "put") {
@@ -87,8 +93,7 @@ int main() {
                 std::cin >> hostname;
                 Driver::getInstance()->removeServer(hostname);
             }
-	    }
-
+	    }*/
 	}
     thread_server.join();
 	
