@@ -406,10 +406,14 @@ int Driver::removeServer(string &hostname) {
 			moveCnt++;
 			opid++;
 			unsigned id = opid.load();
-			auto &srchost = hostList[succ.front()];
+			int tmpid = 0;
+			if (succ[0] == hostid) {
+				tmpid = 1;
+			}
+			auto &srchost = hostList[succ[tmpid]];
 			auto &desthost = hostList[succ.back()];
-			cout << "[DEBUG DRIVER] in addServer send copy msg: id: " << id << " srcport: " << srchost.port << " destport: " << port << " begin: " << hashbegin << " end: " << hashend << endl;
-			msgHandler::sendMove(id, localhost.ip, localhost.port, srchost.ip, srchost.port, ip, port, hashbegin, hashend);
+			cout << "[DEBUG DRIVER] in addServer send copy msg: id: " << id << " srcport: " << srchost.port << " destport: " << desthost.port << " begin: " << hashbegin << " end: " << hashend << endl;
+			msgHandler::sendMove(id, localhost.ip, localhost.port, srchost.ip, srchost.port, desthost.ip, desthost.port, hashbegin, hashend);
 		}
 	}
 
