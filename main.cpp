@@ -7,6 +7,8 @@
 #include "src/data.h"
 #include "src/driver.h"
 #include "src/worker.h"
+#include <cstdlib>
+
 namespace as = boost::asio;
 
 
@@ -38,7 +40,7 @@ int main() {
     auto thread_server = std::thread(&startIO, std::ref(io_service));
     auto thread_write = std::thread(&send_thread, std::ref(io_service));
     auto thread_data = std::thread(&Data::run, Data::getInstance());
-    thread_server.detach();
+
     thread_data.detach();
     thread_write.detach();
 
@@ -46,16 +48,25 @@ int main() {
     unsigned nthread = concurentThreadsSupported >> 1;
 
     for (int i = 0; i < nthread; i++) {
-    	std::cout << "?????" << std::endl;
 		auto thread_handler = std::thread(&msgHandler::run);
 		thread_handler.detach();
 		auto thread_worker = std::thread(&Worker::run);
 		thread_worker.detach();
     }
 
-	Worker::insertPut("sb", "caonima");
-	Worker::insertGet("sb");
-	Worker::insertGet("sc");
+	
+	std::string op;
+	std::cin >> op;
+	if (op == "test") {
+		Worker::insertPut("sb", "nmb");
+		Worker::insertGet("sb");
+		Worker::insertGet("sc");
+	}
+    thread_server.join();
+	
+	//Worker::insertPut("sb", "caonima");
+	//Worker::insertGet("sb");
+	//Worker::insertGet("sc");
 	/*
     while (true) {
         std::string op, key, value;
