@@ -50,11 +50,11 @@ void Data::getMoveData(int id, unsigned int begin, unsigned int end, string srci
 {
 	if (begin > end)
 	{
-		getMoveData_true(id, begin, 4294967295, srcip, srcport, remotescrip, remotesrcport, remotedestip, remotedestport, remove);
-		getMoveData_true(id, 0, end - 1, srcip, srcport, remotescrip, remotesrcport, remotedestip, remotedestport, remove);
+		getMoveData_true(id, begin, 4294967295, srcip, srcport, remotesrcip, remotesrcport, remotedestip, remotedestport, remove);
+		getMoveData_true(id, 0, end - 1, srcip, srcport, remotesrcip, remotesrcport, remotedestip, remotedestport, remove);
 	}
 	else
-		getMoveData_true(id, begin, end - 1, srcip, srcport, remotescrip, remotesrcport, remotedestip, remotedestport, remove);
+		getMoveData_true(id, begin, end - 1, srcip, srcport, remotesrcip, remotesrcport, remotedestip, remotedestport, remove);
 
 }
 
@@ -210,7 +210,7 @@ void Data::run()
         if (kv.op == 5)
         {
 			printf("kv.op:%d\n", kv.op);
-			bool remove = mre[id];
+			bool remove = mre[kv.id];
 			if (remove == false)
 			{
 				printf("do not remove\n");
@@ -222,8 +222,8 @@ void Data::run()
 
 			printf("removing!\n");
 
-			begin = mbe[id];
-			end = men[id];
+			begin = mbe[kv.id];
+			end = men[kv.id];
 
 			printf("saved begin:%u end%u:\n", begin, end);
 
@@ -274,7 +274,7 @@ void Data::run()
 
 			}
             //send all
-			moveDataReturn_return(kv.id, kv.ip, kv.port, status);
+			moveDataReturn_return(kv.id, kv.ip, kv.port, 0);
 
         }
 

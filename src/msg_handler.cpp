@@ -65,6 +65,7 @@ namespace msgHandler {
         int remoteSrcPort = omm->remoteSrcport;
         std::string remoteDstIp = omm->remoteDstip;
         int remoteDstPort = omm->remoteDstport;
+        bool remove = omm->remove;
         Data::getInstance()->getMoveData(id, hashBegin, hashEnd, srcip, srcport, remoteSrcIp, remoteSrcPort, remoteDstIp, remoteDstPort, remove);
     }
 

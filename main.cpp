@@ -58,6 +58,7 @@ int main() {
 	std::cin >> op;
 
 	if (op == "test") {
+	    /*
 		auto starttime = std::chrono::system_clock::now();
 		for (int i = 0; i < 100000; i++) {
 			Worker::insertPut("a", "a");
@@ -65,7 +66,8 @@ int main() {
 		auto endtime = std::chrono::system_clock::now();
 		std::chrono::duration <double> d = endtime - starttime;
 		cout << d.count() << endl;
-/*	    while (true) {
+	     */
+	    while (true) {
             std::string op, key, value;
             std::cin >> op;
             if (op == "put") {
@@ -93,7 +95,7 @@ int main() {
                 std::cin >> hostname;
                 Driver::getInstance()->removeServer(hostname);
             }
-	    }*/
+	    }
 	}
     thread_server.join();
 	
