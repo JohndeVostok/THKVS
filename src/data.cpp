@@ -33,12 +33,29 @@ void Data::get(int id, string ip, int port, string key)
 }
 
 //it means we request [begin, end] (key) and I should return a vector of values
-void Data::getMoveData(int id, unsigned int begin, unsigned int end, string srcip, int srcport, string remotesrcip, int remotesrcport, string remotedestip, int remotedestport, bool remove) {
+void Data::getMoveData_true(int id, unsigned int begin, unsigned int end, string srcip, int srcport, string remotesrcip, int remotesrcport, string remotedestip, int remotedestport, bool remove) {
+
     //TODO: get data. you should do this in queue. this is for test.
     cout << "getMoveData: begin:" << begin << " end:" << end << endl;
     mip[id] = srcip;
     mpo[id] = srcport;
+	mre[id] = remove;
+	mbe[id] = begin;
+	men[id] = end;
     que.push(KeyValue(id, begin, end, srcip, srcport, remotesrcip, remotesrcport, remotedestip, remotedestport, 3));
+}
+
+
+void Data::getMoveData(int id, unsigned int begin, unsigned int end, string srcip, int srcport, string remotesrcip, int remotesrcport, string remotedestip, int remotedestport, bool remove) 
+{
+	if (begin > end)
+	{
+		getMoveData_true(id, begin, 4294967295, srcip, srcport, remotescrip, remotesrcport, remotedestip, remotedestport, remove);
+		getMoveData_true(id, 0, end - 1, srcip, srcport, remotescrip, remotesrcport, remotedestip, remotedestport, remove);
+	}
+	else
+		getMoveData_true(id, begin, end - 1, srcip, srcport, remotescrip, remotesrcport, remotedestip, remotedestport, remove);
+
 }
 
 void Data::getMoveData_return(int id, string remotesrcip, int remotesrcport, string remotedestip, int remotedestport, list<string> keyVec, list<string> valueVec)
@@ -192,8 +209,73 @@ void Data::run()
 
         if (kv.op == 5)
         {
-            int status = 0;
-            moveDataReturn_return(kv.id, kv.ip, kv.port, status);
+			printf("kv.op:%d\n", kv.op);
+			bool remove = mre[id];
+			if (remove == false)
+			{
+				printf("do not remove\n");
+				int status = 0;
+				moveDataReturn_return(kv.id, kv.ip, kv.port, status);
+				continue;
+			}
+			unsigned int begin, end;
+
+			printf("removing!\n");
+
+			begin = mbe[id];
+			end = men[id];
+
+			printf("saved begin:%u end%u:\n", begin, end);
+
+            int sz = hl.size();
+            bool flag = false;
+
+			Value tmp[100];
+
+
+            for (int i = 0; i < sz; i++)
+            {
+                printf("op5 kv.begin:%u kv.end:%u begin:%u end:%u\n", kv.begin, kv.end, hl[i].begin, hl[i].end);
+                //means the hash value is in this range
+                //hl[i]: 6-10 kv.begin = 7 end = 17 [11, 12] [13, 20]
+                if (not ((hl[i].begin <= kv.begin && kv.begin <= hl[i].end) || (hl[i].begin >= kv.begin && kv.end >= hl[i].end) || (hl[i].begin >= kv.begin && kv.end >= hl[i].begin)) )
+                    continue;
+
+                ifstream input;
+                string file_name = conkey(hl[i].begin) + "_" + conkey(hl[i].end) + ".txt";
+                cout << "file_name:" << file_name << endl;
+                input.open(file_name, ios::in);
+                if (!input)
+                {
+                    break;
+				}
+
+                for (int j = 0; j < hl[i].cnt; j++)
+                {
+					input >> tmp[j].key >> tmp[j].value >> tmp[j].time_stamp;
+					if (begin <= tmp[j].key && tmp[j].key <= end)
+                    {
+						tmp[j].flag = true;
+                    }
+                }
+
+                sort(tmp, tmp + hl[i].cnt);
+
+				ofstream output_1;
+				string file_name_1 = conkey(hl[i].begin) + "_" + conkey(hl[i].end) + ".txt"; // 用文件编号构造文件名
+				output_1.open(file_name_1, ios::out);
+
+				for (int j = 0; j < hl[i].cnt; j++)
+				{
+					if (tmp[j].flag == false)
+						continue;
+					output_1 << tmp[j].key << " " << tmp[j].value << " " << tmp[j].time_stamp << endl;
+				}
+
+			}
+            //send all
+			moveDataReturn_return(kv.id, kv.ip, kv.port, status);
+
         }
 
         //{{{

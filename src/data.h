@@ -65,10 +65,11 @@ public:
 
     struct Value
     {
+		bool flag;
         int id;
         unsigned int key;
-        string value;
         long long time_stamp;
+        string value;
         friend bool operator < (Value a, Value b)
         {
             return a.key < b.key;
@@ -95,6 +96,7 @@ public:
 
     //op 3
     void getMoveData(int id, unsigned int begin, unsigned int end, string srcip, int srcport, string remotesrcip, int remotesrcport, string remotedestip, int remotedestport, bool remove);
+	void getMoveData_true(int id, unsigned int begin, unsigned int end, string srcip, int srcport, string remotesrcip, int remotesrcport, string remotedestip, int remotedestport, bool remove);
     void getMoveData_return(int id, string remotesrcip, int remotesrcport, string remotedestip, int remotedestport, list<string> keyVec, list<string> valueVec);
 
     //op4
@@ -111,6 +113,9 @@ public:
 
     map<int, string> mip;
     map<int, int> mpo;
+	map<int, bool> mre;
+	map<int, unsigned int> mbe;
+	map<int, unsigned int> men;
 
 private:
     unordered_map<string, Value> umap;
