@@ -233,7 +233,7 @@ int Driver::addServer(string &hostname, string &ip, int port) {
 	string tmpstr;
 	unsigned nodehash;
 	moveCnt.store(0);
-	map tmpMap = nodeMap;
+	map <unsigned, int> tmpMap = nodeMap;
 	for (int i = 0; i < NODECOPY; i++) {
 		buf.str("");
 		buf << hostname << "#" << i;
