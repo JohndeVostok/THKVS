@@ -92,6 +92,7 @@ int Driver::put(string &key, string &value) {
 		Host& host = hostList[hostIdx];
 		msgHandler::sendPut(id, localhost.ip, localhost.port, host.ip, host.port, key, value);
 	}
+	return id;
 }
 
 int Driver::putReturn(int id, int status) {
@@ -120,7 +121,7 @@ int Driver::putReturn(int id, int status) {
 }
 
 int Driver::putFinish(int id, int status) {
-	cout << "[DEBUG DRIVER] in putFinish id: " << id << " status: " << status << endl;
+	//cout << "[DEBUG DRIVER] in putFinish id: " << id << " status: " << status << endl;
 	Worker::insertPutResult(id, status);
 }
 
@@ -187,7 +188,7 @@ int Driver::getReturn(int id, int status, long long timestamp, string &value) {
 }
 
 int Driver::getFinish(int id, int status, string &value) {
-	cout << "[DEBUG DRIVER] in getFinish id: " << id << " status: " << status << " value: " << value << endl;
+	//cout << "[DEBUG DRIVER] in getFinish id: " << id << " status: " << status << " value: " << value << endl;
     Worker::insertGetResult(id, status, value);
 }
 
@@ -282,13 +283,15 @@ int Driver::addServer(string &hostname, string &ip, int port) {
 			opid++;
 			unsigned id = opid.load();
 			auto &srchost = hostList[succ.back()];
+			/*
 			cout << "[DEBUG DRIVER] succ: ";
 			for (auto x : succ) {
 				cout << x << " ";
 			}
 			cout << endl;
 			cout << "[DEBUG DRIVER] in addServer send move msg: id: " << id << " srcport: " << srchost.port << " destport: " << port << " begin: " << hashbegin << " end: " << hashend << endl;
-			msgHandler::sendMove(id, localhost.ip, localhost.port, srchost.ip, srchost.port, ip, port, hashbegin, hashend,
+			*/
+			 msgHandler::sendMove(id, localhost.ip, localhost.port, srchost.ip, srchost.port, ip, port, hashbegin, hashend,
 								 true);
 		}
 	}
@@ -318,7 +321,7 @@ int Driver::addServer(string &hostname, string &ip, int port) {
         });
     }
 	setEnableFlag(0);
-	cout << "[DEBUG DRIVER] in addServer" << endl;
+	//cout << "[DEBUG DRIVER] in addServer" << endl;
 	return 0;
 }
 
@@ -416,7 +419,7 @@ int Driver::removeServer(string &hostname) {
 			}
 			auto &srchost = hostList[succ[tmpid]];
 			auto &desthost = hostList[succ.back()];
-			cout << "[DEBUG DRIVER] in addServer send copy msg: id: " << id << " srcport: " << srchost.port << " destport: " << desthost.port << " begin: " << hashbegin << " end: " << hashend << endl;
+			//cout << "[DEBUG DRIVER] in addServer send copy msg: id: " << id << " srcport: " << srchost.port << " destport: " << desthost.port << " begin: " << hashbegin << " end: " << hashend << endl;
 			msgHandler::sendMove(id, localhost.ip, localhost.port, srchost.ip, srchost.port, desthost.ip, desthost.port, hashbegin, hashend, false);
 		}
 	}
@@ -445,7 +448,7 @@ int Driver::removeServer(string &hostname) {
         });
     }
 	setEnableFlag(0);
-	cout << "[DEBUG DRIVER] in removeServer" << endl;
+	//cout << "[DEBUG DRIVER] in removeServer" << endl;
 }
 
 int Driver::actRemoveServer(string &hostname) {

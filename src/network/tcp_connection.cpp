@@ -13,16 +13,16 @@ void TcpConnection::init_from_accept() {
 }
 
 void TcpConnection::start_handle_message() {
-    std::cout << "[DEBUG] started reading header" << std::endl;
+    //std::cout << "[DEBUG] started reading header" << std::endl;
     as::async_read(socket_, as::buffer(read_msg.data(), SerialzedMessage::HEADER_SIZE),
                    boost::bind(&TcpConnection::handle_header, shared_from_this(), as::placeholders::error));
 }
 
 void TcpConnection::handle_header(const boost::system::error_code& error) {
-    std::cout << "[DEBUG] started handle header and read body" << std::endl;
+    //std::cout << "[DEBUG] started handle header and read body" << std::endl;
     if (!error & read_msg.decode_header()) {
-        std::cout << "[DEBUG] decoded header: body_size: " << read_msg.body_length() << std::endl;
-        std::cout << "[DEBUG] decoded header: msg_type: " << read_msg.message_type() << std::endl;
+        //std::cout << "[DEBUG] decoded header: body_size: " << read_msg.body_length() << std::endl;
+        //std::cout << "[DEBUG] decoded header: msg_type: " << read_msg.message_type() << std::endl;
         as::async_read(socket_, as::buffer(read_msg.body(), read_msg.body_length()),
                        boost::bind(&TcpConnection::handle_body, shared_from_this(), as::placeholders::error));
 
@@ -38,11 +38,11 @@ void TcpConnection::handle_body(const boost::system::error_code& error) {
         std::cout << boost::system::system_error(error).what() << std::endl;
         return ;
     }
-    std::cout << "[DEBUG] started handle body" << std::endl;
+    //std::cout << "[DEBUG] started handle body" << std::endl;
     std::shared_ptr<Message> msgToRecv;
     read_msg.body()[read_msg.body_length()] = 0;
     std::istringstream istream(read_msg.body());
-    std::cout << "[DEBUG] serialized message: " << read_msg.body() << std::endl;
+    //std::cout << "[DEBUG] serialized message: " << read_msg.body() << std::endl;
     boost::archive::text_iarchive ia(istream);
     switch (read_msg.message_type()) {
         case m_text: {
@@ -190,7 +190,7 @@ void TcpConnection::write_message() {
     buffers.push_back(as::const_buffer(&write_body_size, 4));
     buffers.push_back(as::const_buffer(&write_msg_type, 1));
     // TODO: may not copy
-    std::cout << "[DEBUG] serialized message: " << write_serialized_msg << std::endl;
+    //std::cout << "[DEBUG] serialized message: " << write_serialized_msg << std::endl;
     buffers.push_back(as::const_buffer(write_serialized_msg.c_str(), write_body_size));
 
     as::async_write(socket_, buffers, boost::bind(&TcpConnection::finalize, shared_from_this(), boost::asio::placeholders::error));

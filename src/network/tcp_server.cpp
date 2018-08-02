@@ -7,7 +7,7 @@
 
 void TcpServer::start_accept() {
     std::shared_ptr<TcpConnection> newConn = TcpConnection::create(acceptor_.get_io_service());
-    std::cout << "[DEBUG] started accept socket" << std::endl;
+    //std::cout << "[DEBUG] started accept socket" << std::endl;
     acceptor_.async_accept(newConn->socket(), boost::bind(&TcpServer::handle_accept, this, newConn, boost::asio::placeholders::error));
 }
 

@@ -36,7 +36,7 @@ void Data::get(int id, string ip, int port, string key)
 void Data::getMoveData_true(int id, unsigned int begin, unsigned int end, string srcip, int srcport, string remotesrcip, int remotesrcport, string remotedestip, int remotedestport, bool remove) {
 
     //TODO: get data. you should do this in queue. this is for test.
-    cout << "getMoveData: begin:" << begin << " end:" << end << endl;
+    //cout << "getMoveData: begin:" << begin << " end:" << end << endl;
     mip[id] = srcip;
     mpo[id] = srcport;
 	mre[id] = remove;
@@ -60,7 +60,7 @@ void Data::getMoveData(int id, unsigned int begin, unsigned int end, string srci
 
 void Data::getMoveData_return(int id, string remotesrcip, int remotesrcport, string remotedestip, int remotedestport, list<string> keyVec, list<string> valueVec)
 {
-    cout << "######getMoveData_return######" << endl;
+    //cout << "######getMoveData_return######" << endl;
     //for (int i = 0; i < keyVec.size(); i++)
     //	cout << "key:" << keyVec[i] << " value:" << valueVec[i] << endl;
     msgHandler::sendDataMove(id, remotesrcip, remotesrcport, remotedestip, remotedestport, keyVec, valueVec);
@@ -209,41 +209,41 @@ void Data::run()
 
         if (kv.op == 5)
         {
-			printf("kv.op:%d\n", kv.op);
+			//printf("kv.op:%d\n", kv.op);
 			bool remove = mre[kv.id];
 			if (remove == false)
 			{
-				printf("do not remove\n");
+				//printf("do not remove\n");
 				int status = 0;
 				moveDataReturn_return(kv.id, kv.ip, kv.port, status);
 				continue;
 			}
 			unsigned int begin, end;
 
-			printf("removing!\n");
+			//printf("removing!\n");
 
 			begin = mbe[kv.id];
 			end = men[kv.id];
 
-			printf("saved begin:%u end%u:\n", begin, end);
+			//printf("saved begin:%u end%u:\n", begin, end);
 
             int sz = hl.size();
             bool flag = false;
 
-			Value tmp[100];
+			Value tmp[22];
 
 
             for (int i = 0; i < sz; i++)
             {
-                printf("op5 kv.begin:%u kv.end:%u begin:%u end:%u\n", kv.begin, kv.end, hl[i].begin, hl[i].end);
+                //printf("op5 kv.begin:%u kv.end:%u begin:%u end:%u\n", begin, end, hl[i].begin, hl[i].end);
                 //means the hash value is in this range
                 //hl[i]: 6-10 kv.begin = 7 end = 17 [11, 12] [13, 20]
-                if (not ((hl[i].begin <= kv.begin && kv.begin <= hl[i].end) || (hl[i].begin >= kv.begin && kv.end >= hl[i].end) || (hl[i].begin >= kv.begin && kv.end >= hl[i].begin)) )
+                if (not ((hl[i].begin <= begin && begin <= hl[i].end) || (hl[i].begin >= begin && end >= hl[i].end) || (hl[i].begin >= begin && end >= hl[i].begin)) )
                     continue;
 
                 ifstream input;
                 string file_name = conkey(hl[i].begin) + "_" + conkey(hl[i].end) + ".txt";
-                cout << "file_name:" << file_name << endl;
+                //cout << "file_name:" << file_name << endl;
                 input.open(file_name, ios::in);
                 if (!input)
                 {
@@ -257,6 +257,8 @@ void Data::run()
                     {
 						tmp[j].flag = true;
                     }
+                    //else
+                        //cout << "KEEPING: tmp.key:" << tmp[j].key << endl;
                 }
 
                 sort(tmp, tmp + hl[i].cnt);
@@ -265,10 +267,14 @@ void Data::run()
 				string file_name_1 = conkey(hl[i].begin) + "_" + conkey(hl[i].end) + ".txt"; // 用文件编号构造文件名
 				output_1.open(file_name_1, ios::out);
 
-				for (int j = 0; j < hl[i].cnt; j++)
+				int save_cnt = hl[i].cnt;
+
+				for (int j = 0; j < save_cnt; j++)
 				{
-					if (tmp[j].flag == false)
-						continue;
+					if (tmp[j].flag == true) {
+                        hl[i].cnt -= 1;
+                        continue;
+                    }
 					output_1 << tmp[j].key << " " << tmp[j].value << " " << tmp[j].time_stamp << endl;
 				}
 
@@ -290,7 +296,7 @@ void Data::run()
             unsigned int hash_value = getCRC(kv.key);
             //printf("hash_value:%u\n", hash_value);
 
-            Value tmp[100];
+            Value tmp[22];
 
             for (int i = 0; i < sz; i++)
             {
@@ -348,7 +354,7 @@ void Data::run()
                 int cut = hl[i].cnt / 2;
 
                 //means now we do not need to divide it
-                if (hl[i].cnt <= 4)
+                if (hl[i].cnt <= 20)
                 {
                     lock_guard<mutex> lck(mu);
                     ofstream output_1;
@@ -449,7 +455,7 @@ void Data::run()
                     if (toint(key) == hash_value)
                     {
                         //meas found
-                        printf("FOUNDDDDDD!!!! kv.key%s\n", kv.key.c_str());
+                        //printf("FOUNDDDDDD!!!! kv.key%s\n", kv.key.c_str());
                         flag = true;
                         status = 0;
                         get_return(kv.id, kv.ip, kv.port, status, value, tolonglong(time_stamp));
@@ -473,7 +479,7 @@ void Data::run()
         //{{{
         if (kv.op == 3) //get opreation
         {
-            printf("kv.op:%d\n", kv.op);
+            //printf("kv.op:%d\n", kv.op);
             int sz = hl.size();
             bool flag = false;
 
@@ -481,7 +487,7 @@ void Data::run()
 
             for (int i = 0; i < sz; i++)
             {
-                printf("kv.begin:%u kv.end:%u begin:%u end:%u\n", kv.begin, kv.end, hl[i].begin, hl[i].end);
+                //printf("kv.begin:%u kv.end:%u begin:%u end:%u\n", kv.begin, kv.end, hl[i].begin, hl[i].end);
                 //means the hash value is in this range
                 //hl[i]: 6-10 kv.begin = 7 end = 17 [11, 12] [13, 20]
                 if (not ((hl[i].begin <= kv.begin && kv.begin <= hl[i].end) || (hl[i].begin >= kv.begin && kv.end >= hl[i].end) || (hl[i].begin >= kv.begin && kv.end >= hl[i].begin)) )
@@ -489,7 +495,7 @@ void Data::run()
 
                 ifstream input;
                 string file_name = conkey(hl[i].begin) + "_" + conkey(hl[i].end) + ".txt";
-                cout << "file_name:" << file_name << endl;
+                //cout << "file_name:" << file_name << endl;
                 input.open(file_name, ios::in);
                 if (!input)
                 {
@@ -507,7 +513,7 @@ void Data::run()
                     }
                 }
             }
-            cout << "op3 succeeed" << endl;
+            //cout << "op3 succeeed" << endl;
             //send all
             getMoveData_return(kv.id, kv.remotesrcip, kv.remotesrcport, kv.remotedestip, kv.remotedestport, keyVec, valueVec);
         }
@@ -520,7 +526,7 @@ void Data::run()
         //{{{
         if (kv.op == 4)
         {
-            printf("now kv.op == 4\n");
+            //printf("now kv.op == 4\n");
             int status = 0;
 
             int vecsz = kv.keyVec.size();
@@ -528,11 +534,11 @@ void Data::run()
 
             bool err = false;
 
-            Value tmp[100];
+            Value tmp[22];
 
             for (int p = 0; p < vecsz; p++)
             {
-                printf("p:%d\n", p);
+                //printf("p:%d\n", p);
                 key = kv.keyVec.front();
                 kv.keyVec.pop_front();
                 value = kv.valueVec.front();
@@ -541,7 +547,7 @@ void Data::run()
                 //value = kv.valueVec[p];
 
 
-                cout << "key:" << key << " value:" << value << endl;
+                //cout << "key:" << key << " value:" << value << endl;
 
                 //0 means success
                 int status = 1;
@@ -564,7 +570,7 @@ void Data::run()
                     ifstream input;
                     string file_name = conkey(hl[i].begin) + "_" + conkey(hl[i].end) + ".txt";
 
-                    	printf("file_name:%s\n", file_name.c_str());
+                    	//printf("file_name:%s\n", file_name.c_str());
                     input.open(file_name, ios::in);
                     //means when reading, there is an error occured
                     if (!input)
@@ -615,13 +621,13 @@ void Data::run()
                     sort(tmp, tmp + hl[i].cnt);
                     //printf("op4 value:%s\n", value.c_str());
 
-                    for (int j = 0; j < hl[i].cnt; j++)
-                    	printf("key:%u value:%s time_stamp:%lld\n", tmp[j].key, tmp[j].value.c_str(), tmp[j].time_stamp);
+                    //for (int j = 0; j < hl[i].cnt; j++)
+                    //	printf("key:%u value:%s time_stamp:%lld\n", tmp[j].key, tmp[j].value.c_str(), tmp[j].time_stamp);
 
                     int cut = hl[i].cnt / 2;
 
                     //means now we do not need to divide it
-                    if (hl[i].cnt <= 4)
+                    if (hl[i].cnt <= 20)
                     {
                         ofstream output_1;
                         string file_name_1 = conkey(hl[i].begin) + "_" + conkey(hl[i].end) + ".txt"; // 用文件编号构造文件名
@@ -678,7 +684,7 @@ void Data::run()
             }
             if (err == true) break;
 
-            printf("op4: id:%d ip:%s port:%d\n", kv.id, kv.ip.c_str(), kv.port);
+            //printf("op4: id:%d ip:%s port:%d\n", kv.id, kv.ip.c_str(), kv.port);
 
             recvMoveData_return(kv.id, kv.ip, kv.port, 0);
         }

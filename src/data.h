@@ -122,7 +122,7 @@ private:
     MsgQueue<KeyValue> que;
 
     Data() {
-        std::cout << "[DEBUG DATA] in constructor: Hello World" << std::endl;
+        //std::cout << "[DEBUG DATA] in constructor: Hello World" << std::endl;
     };
     ~Data() {};
 };

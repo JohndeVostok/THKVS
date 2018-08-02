@@ -58,15 +58,17 @@ int main() {
 	std::cin >> op;
 
 	if (op == "test") {
-	    /*
+
 		auto starttime = std::chrono::system_clock::now();
-		for (int i = 0; i < 100000; i++) {
+		for (int i = 0; i < 10000; i++) {
+		    std::cout << "[DEBUG MAIN] put " << i << " times" << std::endl;
 			Worker::insertPut("a", "a");
 		}
 		auto endtime = std::chrono::system_clock::now();
 		std::chrono::duration <double> d = endtime - starttime;
 		cout << d.count() << endl;
-	     */
+
+/*
 	    while (true) {
             std::string op, key, value;
             std::cin >> op;
@@ -96,6 +98,7 @@ int main() {
                 Driver::getInstance()->removeServer(hostname);
             }
 	    }
+*/
 	}
     thread_server.join();
 	

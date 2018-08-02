@@ -31,6 +31,7 @@ namespace Worker {
                 case job::j_put: {
                     int driverId = Driver::getInstance()->put(J->key, J->value);
                     {
+                        //std::cout << "[DEBUG WORKER] in put: driverId: " << driverId << " JobId: " << J->id << std::endl;
                         std::lock_guard<std::mutex> lck(mu);
                         jobIdMap.emplace(driverId, J->id);
                     }
@@ -52,7 +53,7 @@ namespace Worker {
                         jId = jobIdMap[driverId];
                         jobIdMap.erase(driverId);
                     }
-                    std::cout << "[DEBUG WORKER] in result: " << J->status << " " << J->value << std::endl; 
+                    std::cout << "[DEBUG WORKER] in result: " << driverId << " " << jId << " " << J->status << " " << J->value << std::endl;
                     Result R(jId, J->status, J->value);
                     resQue.push(std::make_shared<Result>(R));
                     break;
