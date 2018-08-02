@@ -61,9 +61,9 @@ int main() {
 	if (op == "test") {
 		std::string key, value;
 		
+		std::cout << "[TEST] throughput(put:get 1:0, length=1, record=1000)" << std::endl;
 		key = "a";
 		value = "a";
-		std::cout << "[TEST] throughput(put:get 1:0, length=1, record=1000)" << std::endl;
 		Worker::testCnt.store(1000);
 		auto starttime = std::chrono::system_clock::now();
 		for (int i = 0; i < 1000; i++) {
@@ -80,13 +80,13 @@ int main() {
 		std::chrono::duration <double> d = endtime - starttime;
 		cout << "[TEST] time: " << d.count() << endl;
 
-		Worker::insertPut("a", "a");
-		std::cout << "[TEST] throughput(put:get 0:1) started.";
+		std::cout << "[TEST] throughput(put:get 0:1, record=10000) started.";
+		key = "a";
 		Worker::testCnt.store(10000);
 		starttime = std::chrono::system_clock::now();
 		for (int i = 0; i < 10000; i++) {
-			std::cout << "[DEBUG MAIN] get: " << i << " times" << std::endl;
-			Worker::insertGet("a");
+			//std::cout << "[DEBUG MAIN] get: " << i << " times" << std::endl;
+			Worker::insertGet(key);
 		}
 		{
         	unique_lock <mutex> lck(Worker::testMu);
@@ -96,7 +96,7 @@ int main() {
 		}
 		endtime = std::chrono::system_clock::now();
 		d = endtime - starttime;
-		cout << "[TEST] test result: " << d.count() << endl;
+		cout << "[TEST] time: " << d.count() << endl;
 	
 	} else if (op == "display") {
 	    while (true) {
@@ -130,48 +130,5 @@ int main() {
 		}
 	}
     thread_server.join();
-	
-	//Worker::insertPut("sb", "caonima");
-	//Worker::insertGet("sb");
-	//Worker::insertGet("sc");
-	/*
-    while (true) {
-        std::string op, key, value;
-        std::cin >> op;
-        if (op == "put") {
-            std::cin >> key >> value;
-            Driver::getInstance()->put(key, value);
-        } else if (op == "get") {
-            std::cin >> key;
-            Driver::getInstance()->get(key);
-        } else if (op == "set") {
-            std::cin >> key;
-            if (key == "0") {
-                Driver::getInstance()->setEnableFlag(false);
-            } else {
-                Driver::getInstance()->setEnableFlag(true);
-            }
-        } else if (op == "add") {
-            std::string hostname, ip;
-            int port;
-            std::cin >> hostname >> ip >> port;
-            Driver::getInstance()->addServer(hostname, ip, port);
-        } else if (op == "test") {
-            Driver::getInstance()->test();
-        } else if (op == "remove") {
-            std::string hostname;
-            std::cin >> hostname;
-            Driver::getInstance()->removeServer(hostname);
-        }
-    }
-    std::string key = "sb", value = "caonima";
-    Driver::getInstance()->put(key, value);
-    Driver::getInstance()->get(key);
-	*/
-    /*
-    test ptest;
-    auto thread_test = std::thread(&test::run, &ptest);
-    thread_test.join();
-    */
-     return 0;
+    return 0;
 }

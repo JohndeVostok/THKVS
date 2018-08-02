@@ -54,7 +54,7 @@ namespace Worker {
                         jId = jobIdMap[driverId];
                         jobIdMap.erase(driverId);
                     }
-                    std::cout << "[TEST] result: " << driverId << " " << jId << " " << J->status << " " << J->value << std::endl;
+                    //std::cout << "[TEST] result: " << driverId << " " << jId << " " << J->status << " " << J->value << std::endl;
                     Result R(jId, J->status, J->value);
                     resQue.push(std::make_shared<Result>(R));
                     testCnt--;
