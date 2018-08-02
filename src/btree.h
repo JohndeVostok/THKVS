@@ -31,7 +31,7 @@ private:
 	const int BMAX = 4;
 
 	//file handle
-	int nodepage, nodeoff;
+	int nodepage, nodeoff, head;
 
 	fstream file;
 	vector <int> entryPage;
@@ -48,7 +48,10 @@ private:
 public:
 	Btree();
 	~Btree();
-	int insert(unsigned key);
+	int put(unsigned key, Entry &entry);
+	int get(unsigned key, Entry &entry);
+	int collect(unsigned begin, unsigned end, vector <Entry> &entries);
+	int remove(unsigned begin, unsigned end);
 	void test();
 };
 
