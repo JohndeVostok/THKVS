@@ -256,10 +256,10 @@ int Driver::addServer(string &hostname, string &ip, int port) {
 			jter = tmpMap.begin();
 		}
 		hashend = jter->first;
-		while (unique.size() < THKVS_N + curFlag) {
+		while (succ.size() < THKVS_N + curFlag) {
 			bool uniqueFlag = 0;
 			if (jter->second == hostList.size()) {
-				CurFlag = 1;
+				curFlag = 1;
 			}
 			for (auto id : succ) {
 				if (jter->second == id) {
@@ -275,11 +275,10 @@ int Driver::addServer(string &hostname, string &ip, int port) {
 			}
 		}
 		
-		if (curFlag.size() > THKVS_N) {
+		if (succ.size() > THKVS_N) {
 			moveCnt++;
 			opid++;
 			unsigned id = opid.load();
-			hashbegin = pre[i].first;
 			auto &srchost = hostList[succ.back()];
 			cout << "[DEBUG DRIVER] in addServer send move msg: id: " << id << " srcport: " << srchost.port << " destport: " << port << " begin: " << hashbegin << " end: " << hashend << endl;
 			msgHandler::sendMove(id, localhost.ip, localhost.port, srchost.ip, srchost.port, ip, port, hashbegin, hashend);
