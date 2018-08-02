@@ -46,6 +46,7 @@ int main() {
     unsigned nthread = concurentThreadsSupported >> 1;
 
     for (int i = 0; i < nthread; i++) {
+    	std::cout << "?????" << std::endl;
 		auto thread_handler = std::thread(&msgHandler::run);
 		thread_handler.detach();
 		auto thread_worker = std::thread(&Worker::run);
