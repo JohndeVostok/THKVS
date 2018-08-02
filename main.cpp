@@ -7,6 +7,7 @@
 #include "src/data.h"
 #include "src/driver.h"
 #include "src/worker.h"
+#include "cstdlib"
 
 namespace as = boost::asio;
 
@@ -58,7 +59,9 @@ int main() {
 	std::cin >> op;
 
 	if (op == "test") {
-		std::cout << "[TEST] throughput(put:get 1:0) started."
+		
+		/*
+		std::cout << "[TEST] throughput(put:get 1:0) started.";
 		Worker::testCnt.store(10000);
 		auto starttime = std::chrono::system_clock::now();
 		for (int i = 0; i < 10000; i++) {
@@ -67,14 +70,33 @@ int main() {
 		}
 		{
         	unique_lock <mutex> lck(Worker::testMu);
-        	Worker::testCond.wait(lck, [this]() {
+        	Worker::testCond.wait(lck, []() {
         		return Worker::testCnt.load() == 0;
         	});
 		}
 		auto endtime = std::chrono::system_clock::now();
 		std::chrono::duration <double> d = endtime - starttime;
 		cout << "[TEST] test result: " << d.count() << endl;
+		*/
 
+
+		Worker::insertPut("a", "a");
+		std::cout << "[TEST] throughput(put:get 0:1) started.";
+		Worker::testCnt.store(10000);
+		auto starttime = std::chrono::system_clock::now();
+		for (int i = 0; i < 10000; i++) {
+			std::cout << "[DEBUG MAIN] get: " << i << " times" << std::endl;
+			Worker::insertGet("a");
+		}
+		{
+        	unique_lock <mutex> lck(Worker::testMu);
+        	Worker::testCond.wait(lck, []() {
+        		return Worker::testCnt.load() == 0;
+        	});
+		}
+		auto endtime = std::chrono::system_clock::now();
+		std::chrono::duration <double> d = endtime - starttime;
+		cout << "[TEST] test result: " << d.count() << endl;
 /*
 	    while (true) {
             std::string op, key, value;

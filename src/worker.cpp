@@ -35,7 +35,7 @@ namespace Worker {
                         //std::cout << "[DEBUG WORKER] in put: driverId: " << driverId << " JobId: " << J->id << std::endl;
                         std::lock_guard<std::mutex> lck(mu);
                         jobIdMap.emplace(driverId, J->id);
-                    }
+					}
                     break;
                 }
                 case job::j_get: {

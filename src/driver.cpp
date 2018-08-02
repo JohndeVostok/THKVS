@@ -151,6 +151,7 @@ int Driver::get(string &key) {
 		Host& host = hostList[hostIdx];
 		msgHandler::sendGet(id, localhost.ip, localhost.port, host.ip, host.port, key);
 	}
+	return id;
 }
 
 int Driver::getReturn(int id, int status, long long timestamp, string &value) {
