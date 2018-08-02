@@ -228,7 +228,6 @@ int Driver::addServer(string &hostname, string &ip, int port) {
 		return 1;
 	}
 
-	vector <pair <unsigned, int>> pre, suc;
 	ostringstream buf;
 	string tmpstr;
 	unsigned nodehash;
@@ -354,82 +353,58 @@ int Driver::removeServer(string &hostname) {
 	}
 
 	flag = 1;
-	Host chost;
-	for (auto &host : hostList) {
-		if (host.hostname == hostname) {
+	int hostid;
+	for (int i = 0; i < hostList.size(); i++) {
+		if (hostList[i].hostname == hostname) {
 			flag = 0;
-			chost = host;
+			hostid = i;
 		}
 	}
 	if (flag) {
 		return 1;
 	}
 
-	vector <pair <unsigned, int>> pre, suc;
-	ostringstream buf;
-	string tmpstr;
-	unsigned nodehash;
 	moveCnt.store(0);
-	for (int i = 0; i < NODECOPY; i++) {
-		buf.str("");
-		buf << hostname << "#" << i;
-		tmpstr = buf.str();
-		nodehash = hash(tmpstr);
-		if (!nodeMap.count(nodehash)) {
+	map <unsigned, int> tmpMap = nodeMap;
+	vector <int> succ;
+	unsigned hashbegin, hashend;
+	for (auto iter = tmpMap.begin(); iter != tmpMap.end(); iter++) {
+		succ.clear();
+		hashbegin = iter->first;
+		bool curFlag = 0;
+		auto jter = iter;
+		jter++;
+		if (jter == tmpMap.end()) {
+			jter = tmpMap.begin();
+		}
+		hashend = jter->first;
+		while (succ.size() < THKVS_N + curFlag) {
+			bool uniqueFlag = 0;
+			if (jter->second == hostid) {
+				curFlag = 1;
+			}
+			for (auto id : succ) {
+				if (jter->second == id) {
+					uniqueFlag = 1;
+				}
+			}
+			if (!uniqueFlag) {
+				succ.emplace_back(jter->second);
+			}
+			jter++;
+			if (jter == tmpMap.end()) {
+				jter = tmpMap.begin();
+			}
+		}
+		
+		if (succ.size() > THKVS_N) {
 			moveCnt++;
-			pre.clear();
-			suc.clear();
-			auto iter = nodeMap.upper_bound(nodehash);
-			if (iter == nodeMap.begin()) {
-				iter = nodeMap.end();
-			}
-			iter--;
-			while (pre.size() < THKVS_N) {
-				flag = 0;
-				for (auto &node : pre) {
-					if (iter->second == node.second) {
-						flag = 1;
-					}
-				}
-				if (!flag) {
-					pre.emplace_back(iter->first, iter->second);
-				}
-                iter--;
-				if (iter == nodeMap.begin()) {
-					iter = nodeMap.end();
-				}
-			}
-			iter = nodeMap.upper_bound(nodehash);
-			if (iter == nodeMap.end()) {
-				iter = nodeMap.begin();
-			}
-			while (suc.size() < THKVS_N) {
-				flag = 0;
-				for (auto &node : suc) {
-					if (iter->second == node.second) {
-						flag = 1;
-					}
-				}
-				if (!flag) {
-					suc.emplace_back(iter->first, iter->second);
-				}
-				iter++;
-				if (iter == nodeMap.end()) {
-					iter = nodeMap.begin();
-				}
-			}
-			unsigned hashend = nodehash, hashbegin;
-			Host srchost = chost;
-			for (int i = 0; i < THKVS_N; i++) {
-				opid++;
-				unsigned id = opid.load();
-				hashbegin = pre[i].first;
-				auto &desthost = hostList[suc[THKVS_N - i - 1].second];
-				cout << "[DEBUG DRIVER] in removeServer send move msg: id: " << id << " srcport: " << srchost.port << " destport: " << desthost.port << " begin: " << hashbegin << " end: " << hashend << endl;
-				msgHandler::sendMove(id, localhost.ip, localhost.port, srchost.ip, srchost.port, desthost.ip, desthost.port, hashbegin, hashend);
-				hashend = hashbegin;
-				srchost = hostList[pre[i].second];
-			}
+			opid++;
+			unsigned id = opid.load();
+			auto &srchost = hostList[succ.front()];
+			auto &desthost = hostList[succ.back()];
+			cout << "[DEBUG DRIVER] in addServer send copy msg: id: " << id << " srcport: " << srchost.port << " destport: " << port << " begin: " << hashbegin << " end: " << hashend << endl;
+			msgHandler::sendMove(id, localhost.ip, localhost.port, srchost.ip, srchost.port, ip, port, hashbegin, hashend);
 		}
 	}
 
