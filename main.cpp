@@ -58,7 +58,7 @@ int main() {
 	std::cin >> op;
 
 	if (op == "test") {
-
+		std::cout << "[TEST] throughput(put:get 1:0)"
 		auto starttime = std::chrono::system_clock::now();
 		for (int i = 0; i < 10000; i++) {
 		    std::cout << "[DEBUG MAIN] put " << i << " times" << std::endl;
