@@ -38,7 +38,7 @@ private:
 		int id = -1;
 	};
 
-	const int NODECOPY = 2;
+	const int NODECOPY = 256;
 	const int THKVS_N = 3; //replica number
 	const int THKVS_R = 2; //read number
 	const int THKVS_W = 2; //write number

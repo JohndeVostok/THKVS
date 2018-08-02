@@ -23,6 +23,7 @@ namespace Worker {
     std::atomic<int> jobId{0}, testCnt{0};
     std::condition_variable testCond;
     std::mutex mu, testMu;
+	bool displayFlag = 0;
 
     void run() {
         while (true) {
@@ -54,7 +55,7 @@ namespace Worker {
                         jId = jobIdMap[driverId];
                         jobIdMap.erase(driverId);
                     }
-                    //std::cout << "[TEST] result: " << driverId << " " << jId << " " << J->status << " " << J->value << std::endl;
+                    if (displayFlag) std::cout << "[TEST] result: " << driverId << " " << jId << " " << J->status << " " << J->value << std::endl;
                     Result R(jId, J->status, J->value);
                     resQue.push(std::make_shared<Result>(R));
                     testCnt--;
@@ -90,4 +91,9 @@ namespace Worker {
         jobQue.push(std::make_shared<job>(J));
         return ;
     }
+
+	void setDisplay() {
+		std::lock_guard <std::mutex> lck(mu);
+		displayFlag = 1;
+	}
 }

@@ -42,6 +42,7 @@ namespace Worker {
     extern std::atomic<int> jobId, testCnt;
     extern std::condition_variable testCond;
     extern std::mutex mu, testMu;
+	extern bool displayFlag;
 
     void run();
 
@@ -52,6 +53,8 @@ namespace Worker {
     void insertGetResult(int driverId, int status, std::string value);
 
     void insertPutResult(int driverId, int status);
+
+	void setDisplay();
 
 }
 
