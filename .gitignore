@@ -263,6 +263,7 @@ CTestTestfile.cmake
 
 #build
 build/*
+test
 test0
 test1
 test2
