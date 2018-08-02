@@ -53,7 +53,7 @@ namespace msgHandler {
     void sendRemoveServerRet(int id, std::string ip, int port, int status);
 
     void sendMove(int id, std::string localip, int localport, std::string remoteSrcIp, int remoteSrcPort,
-                  std::string remoteDstIp, int remoteDstPort, unsigned hashBegin, unsigned hashEnd);
+                  std::string remoteDstIp, int remoteDstPort, unsigned hashBegin, unsigned hashEnd, bool remove);
 
     void sendDataMove(int id, std::string localip, int localport, std::string ip, int port,
                       std::list<std::string>& key, std::list<std::string>& value);

@@ -281,9 +281,9 @@ namespace msgHandler {
     }
 
     void sendMove(int id, std::string localip, int localport, std::string remoteSrcIp, int remoteSrcPort,
-                  std::string remoteDstIp, int remoteDstPort, unsigned hashBegin, unsigned hashEnd) {
+                  std::string remoteDstIp, int remoteDstPort, unsigned hashBegin, unsigned hashEnd, bool remove) {
         OpMoveMessage omm(m_move, remoteSrcIp, remoteSrcPort, localip, localport, id,
-                           remoteDstIp, remoteDstPort, hashBegin, hashEnd);
+                           remoteDstIp, remoteDstPort, hashBegin, hashEnd, remove);
         manager::send(std::make_shared<OpMoveMessage>(omm));
         return ;
     }

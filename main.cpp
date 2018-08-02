@@ -27,7 +27,8 @@ void send_thread(std::shared_ptr<as::io_service>& io_service) {
 
 int main() {
     std::cout << "Hello, World!" << std::endl;
-
+    unsigned concurentThreadsSupported = std::thread::hardware_concurrency();
+    std::cout << concurentThreadsSupported << std::endl;
 
     std::shared_ptr<as::io_service> io_service(new as::io_service);
     //TcpServer server(*io_service);

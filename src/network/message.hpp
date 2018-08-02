@@ -192,12 +192,13 @@ public:
     int remoteDstport;
     unsigned hashBegin;
     unsigned hashEnd;
+    bool remove;
     OpMoveMessage() {}
     OpMoveMessage(m_type _type, std::string _to_ip, int _port, std::string _srcip, int _srcport, int _id,
-                  std::string _dstip, int _dstport, unsigned _hashBegin, unsigned _hashEnd)
+                  std::string _dstip, int _dstport, unsigned _hashBegin, unsigned _hashEnd, bool _remove)
             : Message(_type, _to_ip, _port), srcip(_srcip), srcport(_srcport), id(_id), remoteDstip(_dstip),
               remoteDstport(_dstport), hashBegin(_hashBegin), hashEnd(_hashEnd),
-              remoteSrcip(_to_ip), remoteSrcport(_port) {}
+              remoteSrcip(_to_ip), remoteSrcport(_port), remove(_remove){}
 private:
     friend class boost::serialization::access;
     template <class Archive>
@@ -212,6 +213,7 @@ private:
         ar & remoteDstport;
         ar & hashBegin;
         ar & hashEnd;
+        ar & remove;
     }
 };
 
