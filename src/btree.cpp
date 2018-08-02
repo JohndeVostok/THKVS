@@ -14,8 +14,9 @@ Btree::Btree() {
 		nodeoff = PAGESIZE;
 		rtid = allocNode();
 		Node &rt = nodeList[rtid];
+		rt.leaf = 1;
 		rt.prev = rtid;
-		rt.prev = rtid;
+		rt.succ = rtid;
 	}
 }
 
@@ -187,7 +188,10 @@ Btree::Entry Btree::loadEntry(int page) {
 }
 
 int Btree::put(unsigned key, Entry &entry) {
-	entry.id == allocEntry();
+	int entryid = allocEntry();
+	entry.id = entryid;
+	dumpEntry(entry);
+	int id = rtid;
 }
 /*int Btree::split(int id) {
 	int id1 = allocNode(), id2 = allocNode();
