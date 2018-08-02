@@ -33,7 +33,7 @@ void Data::get(int id, string ip, int port, string key)
 }
 
 //it means we request [begin, end] (key) and I should return a vector of values
-void Data::getMoveData(int id, unsigned int begin, unsigned int end, string srcip, int srcport, string remotesrcip, int remotesrcport, string remotedestip, int remotedestport) {
+void Data::getMoveData(int id, unsigned int begin, unsigned int end, string srcip, int srcport, string remotesrcip, int remotesrcport, string remotedestip, int remotedestport, bool remove) {
     //TODO: get data. you should do this in queue. this is for test.
     cout << "getMoveData: begin:" << begin << " end:" << end << endl;
     mip[id] = srcip;
