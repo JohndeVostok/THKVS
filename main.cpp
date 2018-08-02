@@ -59,14 +59,16 @@ int main() {
 	std::cin >> op;
 
 	if (op == "test") {
+		std::string key, value;
 		
-		/*
-		std::cout << "[TEST] throughput(put:get 1:0) started.";
-		Worker::testCnt.store(10000);
+		key = "a";
+		value = "a";
+		std::cout << "[TEST] throughput(put:get 1:0, length=1, record=1000)" << std::endl;
+		Worker::testCnt.store(1000);
 		auto starttime = std::chrono::system_clock::now();
-		for (int i = 0; i < 10000; i++) {
-			std::cout << "[DEBUG MAIN] put: " << i << " times" << std::endl;
-			Worker::insertPut("a", "a");
+		for (int i = 0; i < 1000; i++) {
+			//std::cout << "[DEBUG MAIN] put: " << i << " times" << std::endl;
+			Worker::insertPut(key, value);
 		}
 		{
         	unique_lock <mutex> lck(Worker::testMu);
@@ -76,14 +78,12 @@ int main() {
 		}
 		auto endtime = std::chrono::system_clock::now();
 		std::chrono::duration <double> d = endtime - starttime;
-		cout << "[TEST] test result: " << d.count() << endl;
-		*/
-
+		cout << "[TEST] time: " << d.count() << endl;
 
 		Worker::insertPut("a", "a");
 		std::cout << "[TEST] throughput(put:get 0:1) started.";
 		Worker::testCnt.store(10000);
-		auto starttime = std::chrono::system_clock::now();
+		starttime = std::chrono::system_clock::now();
 		for (int i = 0; i < 10000; i++) {
 			std::cout << "[DEBUG MAIN] get: " << i << " times" << std::endl;
 			Worker::insertGet("a");
@@ -94,10 +94,11 @@ int main() {
         		return Worker::testCnt.load() == 0;
         	});
 		}
-		auto endtime = std::chrono::system_clock::now();
-		std::chrono::duration <double> d = endtime - starttime;
+		endtime = std::chrono::system_clock::now();
+		d = endtime - starttime;
 		cout << "[TEST] test result: " << d.count() << endl;
-/*
+	
+	} else if (op == "display") {
 	    while (true) {
             std::string op, key, value;
             std::cin >> op;
@@ -126,8 +127,7 @@ int main() {
                 std::cin >> hostname;
                 Driver::getInstance()->removeServer(hostname);
             }
-	    }
-*/
+		}
 	}
     thread_server.join();
 	
