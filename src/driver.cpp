@@ -240,7 +240,7 @@ int Driver::addServer(string &hostname, string &ip, int port) {
 		tmpstr = buf.str();
 		nodehash = hash(tmpstr);
 		if (!tmpMap.count(nodehash)) {
-			tmpMap.emplace(nodehash, nodeList.size());
+			tmpMap.emplace(nodehash, hostList.size());
 		}
 	}
 
@@ -250,7 +250,8 @@ int Driver::addServer(string &hostname, string &ip, int port) {
 		succ.clear();
 		hashbegin = iter->first;
 		bool curFlag = 0;
-		auto jter = iter + 1;
+		auto jter = iter;
+		jter++;
 		if (jter == tmpMap.end()) {
 			jter = tmpMap.begin();
 		}
