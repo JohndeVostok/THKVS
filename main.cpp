@@ -44,7 +44,7 @@ int main() {
     thread_data.detach();
     thread_write.detach();
 
-    unsigned concurentThreadsSupported = std::thread::hardware_concurrency() - 10;
+    unsigned concurentThreadsSupported = std::thread::hardware_concurrency() - 2;
     unsigned nthread = concurentThreadsSupported >> 1;
 
     for (int i = 0; i < nthread; i++) {
@@ -57,10 +57,38 @@ int main() {
 	
 	std::string op;
 	std::cin >> op;
+
 	if (op == "test") {
-		Worker::insertPut("sb", "nmb");
-		Worker::insertGet("sb");
-		Worker::insertGet("sc");
+	    while (true) {
+            std::string op, key, value;
+            std::cin >> op;
+            if (op == "put") {
+                std::cin >> key >> value;
+                Worker::insertPut(key, value);
+            } else if (op == "get") {
+                std::cin >> key;
+                Worker::insertGet(key);
+            } else if (op == "set") {
+                std::cin >> key;
+                if (key == "0") {
+                    Driver::getInstance()->setEnableFlag(false);
+                } else {
+                    Driver::getInstance()->setEnableFlag(true);
+                }
+            } else if (op == "add") {
+                std::string hostname, ip;
+                int port;
+                std::cin >> hostname >> ip >> port;
+                Driver::getInstance()->addServer(hostname, ip, port);
+            } else if (op == "test") {
+                Driver::getInstance()->test();
+            } else if (op == "remove") {
+                std::string hostname;
+                std::cin >> hostname;
+                Driver::getInstance()->removeServer(hostname);
+            }
+	    }
+
 	}
     thread_server.join();
 	

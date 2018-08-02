@@ -35,12 +35,15 @@ void Data::get(int id, string ip, int port, string key)
 //it means we request [begin, end] (key) and I should return a vector of values
 void Data::getMoveData(int id, unsigned int begin, unsigned int end, string srcip, int srcport, string remotesrcip, int remotesrcport, string remotedestip, int remotedestport) {
     //TODO: get data. you should do this in queue. this is for test.
+    cout << "getMoveData: begin:" << begin << " end:" << end << endl;
+    mip[id] = srcip;
+    mpo[id] = srcport;
     que.push(KeyValue(id, begin, end, srcip, srcport, remotesrcip, remotesrcport, remotedestip, remotedestport, 3));
 }
 
 void Data::getMoveData_return(int id, string remotesrcip, int remotesrcport, string remotedestip, int remotedestport, list<string> keyVec, list<string> valueVec)
 {
-    //cout << "######getMoveData_return######" << endl;
+    cout << "######getMoveData_return######" << endl;
     //for (int i = 0; i < keyVec.size(); i++)
     //	cout << "key:" << keyVec[i] << " value:" << valueVec[i] << endl;
     msgHandler::sendDataMove(id, remotesrcip, remotesrcport, remotedestip, remotedestport, keyVec, valueVec);
@@ -66,11 +69,15 @@ void Data::recvMoveData_return(int id, string srcip, int srcport, int status)
 void Data::moveDataReturn(int id, int status) {
     //TODO: delete data. you should do this in queue. this is for test.
     //cout << "[DEBUG DATA] in moveDataReturn: move Data" << endl;
+    string key = "";
+    string value = "";
+    que.push(KeyValue(id, mip[id], mpo[id], key, value, 5));
 }
 
-void Data::moveDataReturn_return(int id, int status) {
+void Data::moveDataReturn_return(int id, string ip, int port, int status) {
     //cout << "moveDataReturn_return" << endl;
-    //msgHandler::sendMoveRet(id, ip, port, status);
+
+    msgHandler::sendMoveRet(id, ip, port, status);
 }
 
 void Data::get_return(int id, string ip, int port, int status, string value, long long time_stamp)
@@ -182,6 +189,13 @@ void Data::run()
         //key:kv.key(string), kv.value(string), V.time_stamp(long long)
         //key:"fuck you", "asshole", "294719579252"
         //hl[0].begin:1 hl[0].end:2147483647 hl[0].cnt = 0
+
+        if (kv.op == 5)
+        {
+            int status = 0;
+            moveDataReturn_return(kv.id, kv.ip, kv.port, status);
+        }
+
         //{{{
         if (kv.op == 1)
         {
@@ -377,6 +391,7 @@ void Data::run()
         //{{{
         if (kv.op == 3) //get opreation
         {
+            printf("kv.op:%d\n", kv.op);
             int sz = hl.size();
             bool flag = false;
 
@@ -384,7 +399,7 @@ void Data::run()
 
             for (int i = 0; i < sz; i++)
             {
-                //printf("kv.begin:%u kv.end:%u begin:%u end:%u\n", kv.begin, kv.end, hl[i].begin, hl[i].end);
+                printf("kv.begin:%u kv.end:%u begin:%u end:%u\n", kv.begin, kv.end, hl[i].begin, hl[i].end);
                 //means the hash value is in this range
                 //hl[i]: 6-10 kv.begin = 7 end = 17 [11, 12] [13, 20]
                 if (not ((hl[i].begin <= kv.begin && kv.begin <= hl[i].end) || (hl[i].begin >= kv.begin && kv.end >= hl[i].end) || (hl[i].begin >= kv.begin && kv.end >= hl[i].begin)) )
@@ -392,6 +407,7 @@ void Data::run()
 
                 ifstream input;
                 string file_name = conkey(hl[i].begin) + "_" + conkey(hl[i].end) + ".txt";
+                cout << "file_name:" << file_name << endl;
                 input.open(file_name, ios::in);
                 if (!input)
                 {
@@ -409,6 +425,7 @@ void Data::run()
                     }
                 }
             }
+            cout << "op3 succeeed" << endl;
             //send all
             getMoveData_return(kv.id, kv.remotesrcip, kv.remotesrcport, kv.remotedestip, kv.remotedestport, keyVec, valueVec);
         }
@@ -421,7 +438,7 @@ void Data::run()
         //{{{
         if (kv.op == 4)
         {
-            //printf("now kv.op == 4\n");
+            printf("now kv.op == 4\n");
             int status = 0;
 
             int vecsz = kv.keyVec.size();
@@ -433,16 +450,16 @@ void Data::run()
 
             for (int p = 0; p < vecsz; p++)
             {
-                //printf("p:%d\n", p);
+                printf("p:%d\n", p);
                 key = kv.keyVec.front();
                 kv.keyVec.pop_front();
                 value = kv.valueVec.front();
-                kv.keyVec.pop_front();
+                kv.valueVec.pop_front();
                 //key = kv.keyVec[p];
                 //value = kv.valueVec[p];
 
 
-                //cout << "key:" << key << " value:" << value << endl;
+                cout << "key:" << key << " value:" << value << endl;
 
                 //0 means success
                 int status = 1;
@@ -465,7 +482,7 @@ void Data::run()
                     ifstream input;
                     string file_name = conkey(hl[i].begin) + "_" + conkey(hl[i].end) + ".txt";
 
-                    //	printf("file_name:%s\n", file_name.c_str());
+                    	printf("file_name:%s\n", file_name.c_str());
                     input.open(file_name, ios::in);
                     //means when reading, there is an error occured
                     if (!input)
@@ -516,8 +533,8 @@ void Data::run()
                     sort(tmp, tmp + hl[i].cnt);
                     //printf("op4 value:%s\n", value.c_str());
 
-                    //for (int j = 0; j < hl[i].cnt; j++)
-                    //	printf("key:%u value:%s time_stamp:%lld\n", tmp[j].key, tmp[j].value.c_str(), tmp[j].time_stamp);
+                    for (int j = 0; j < hl[i].cnt; j++)
+                    	printf("key:%u value:%s time_stamp:%lld\n", tmp[j].key, tmp[j].value.c_str(), tmp[j].time_stamp);
 
                     int cut = hl[i].cnt / 2;
 
@@ -579,7 +596,7 @@ void Data::run()
             }
             if (err == true) break;
 
-            //printf("op4: id:%d ip:%s port:%d\n", kv.id, kv.ip.c_str(), kv.port);
+            printf("op4: id:%d ip:%s port:%d\n", kv.id, kv.ip.c_str(), kv.port);
 
             recvMoveData_return(kv.id, kv.ip, kv.port, 0);
         }

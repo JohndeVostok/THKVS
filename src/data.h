@@ -103,11 +103,14 @@ public:
 
     //op5
     void moveDataReturn(int id, int status);
-    void moveDataReturn_return(int id, int status);
+    void moveDataReturn_return(int id, string ip, int port, int status);
 
 
     long long tolonglong(string key);
     unsigned int toint(string key);
+
+    map<int, string> mip;
+    map<int, int> mpo;
 
 private:
     unordered_map<string, Value> umap;
