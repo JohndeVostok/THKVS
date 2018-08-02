@@ -233,74 +233,55 @@ int Driver::addServer(string &hostname, string &ip, int port) {
 	string tmpstr;
 	unsigned nodehash;
 	moveCnt.store(0);
+	map tmpMap = nodeMap;
 	for (int i = 0; i < NODECOPY; i++) {
 		buf.str("");
 		buf << hostname << "#" << i;
 		tmpstr = buf.str();
 		nodehash = hash(tmpstr);
-		if (!nodeMap.count(nodehash)) {
+		if (!tmpMap.count(nodehash)) {
+			tmpMap.emplace(nodehash, nodeList.size());
+		}
+	}
+
+	vector <int> succ;
+	unsigned hashbegin, hashend;
+	for (auto iter = tmpMap.begin(); iter != tmpMap.end(); iter++) {
+		succ.clear();
+		hashbegin = iter->first;
+		bool curFlag = 0;
+		auto jter = iter + 1;
+		if (jter == tmpMap.end()) {
+			jter = tmpMap.begin();
+		}
+		hashend = jter->first;
+		while (unique.size() < THKVS_N + curFlag) {
+			bool uniqueFlag = 0;
+			if (jter->second == hostList.size()) {
+				CurFlag = 1;
+			}
+			for (auto id : succ) {
+				if (jter->second == id) {
+					uniqueFlag = 1;
+				}
+			}
+			if (!uniqueFlag) {
+				succ.emplace_back(jter->second);
+			}
+			jter++;
+			if (jter == tmpMap.end()) {
+				jter = tmpMap.begin();
+			}
+		}
+		
+		if (curFlag.size() > THKVS_N) {
 			moveCnt++;
-			pre.clear();
-			suc.clear();
-			auto iter = nodeMap.upper_bound(nodehash);
-			if (iter == nodeMap.begin()) {
-				iter = nodeMap.end();
-			}
-			iter--;
-			while (pre.size() < THKVS_N) {
-				flag = 0;
-				for (auto &node : pre) {
-					if (iter->second == node.second) {
-						flag = 1;
-					}
-				}
-				if (!flag) {
-					pre.emplace_back(iter->first, iter->second);
-				}
-				if (iter == nodeMap.begin()) {
-					iter = nodeMap.end();
-				}
-				iter--;
-			}
-			iter = nodeMap.upper_bound(nodehash);
-			if (iter == nodeMap.end()) {
-				iter = nodeMap.begin();
-			}
-			while (suc.size() < THKVS_N) {
-				flag = 0;
-				for (auto &node : suc) {
-					if (iter->second == node.second) {
-						flag = 1;
-					}
-				}
-				if (!flag) {
-					suc.emplace_back(iter->first, iter->second);
-				}
-				iter++;
-				if (iter == nodeMap.end()) {
-					iter = nodeMap.begin();
-				}
-			}
-			cout << "[DEBUG DRIVER] in addServer pre: ";
-			for (auto p : pre) {
-				cout << p.second << " ";
-			}
-			cout << endl;
-			cout << "[DEBUG DRIVER] in addServer suc: ";
-			for (auto p : suc) {
-				cout << p.second << " ";
-			}
-			cout << endl;
-			unsigned hashend = nodehash, hashbegin;
-			for (int i = 0; i < THKVS_N; i++) {
-				opid++;
-				unsigned id = opid.load();
-				hashbegin = pre[i].first;
-				auto &srchost = hostList[suc[THKVS_N - i - 1].second];
-				cout << "[DEBUG DRIVER] in addServer send move msg: id: " << id << " srcport: " << srchost.port << " destport: " << port << " begin: " << hashbegin << " end: " << hashend << endl;
-				msgHandler::sendMove(id, localhost.ip, localhost.port, srchost.ip, srchost.port, ip, port, hashbegin, hashend);
-				hashend = hashbegin;
-			}
+			opid++;
+			unsigned id = opid.load();
+			hashbegin = pre[i].first;
+			auto &srchost = hostList[succ.back()];
+			cout << "[DEBUG DRIVER] in addServer send move msg: id: " << id << " srcport: " << srchost.port << " destport: " << port << " begin: " << hashbegin << " end: " << hashend << endl;
+			msgHandler::sendMove(id, localhost.ip, localhost.port, srchost.ip, srchost.port, ip, port, hashbegin, hashend);
 		}
 	}
 
