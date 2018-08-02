@@ -280,6 +280,11 @@ int Driver::addServer(string &hostname, string &ip, int port) {
 			opid++;
 			unsigned id = opid.load();
 			auto &srchost = hostList[succ.back()];
+			cout << "[DEBUG DRIVER] succ: ";
+			for (auto x : succ) {
+				cout << x << " ";
+			}
+			cout << endl;
 			cout << "[DEBUG DRIVER] in addServer send move msg: id: " << id << " srcport: " << srchost.port << " destport: " << port << " begin: " << hashbegin << " end: " << hashend << endl;
 			msgHandler::sendMove(id, localhost.ip, localhost.port, srchost.ip, srchost.port, ip, port, hashbegin, hashend);
 		}
