@@ -146,6 +146,26 @@ int main() {
 		d = endtime - starttime;
 		std::cout << "[TEST] time: " << d.count() << std::endl;
 
+		std::cout << "[TEST] throughput(put:get 1:0, length=10000, record=1000)" << std::endl;
+		key = "a";
+		value = "";
+		for (int i = 0; i < 10000; i++) value = value + "d";
+		Worker::testCnt.store(1000);
+		starttime = std::chrono::system_clock::now();
+		for (int i = 0; i < 1000; i++) {
+			//std::cout << "[DEBUG MAIN] put: " << i << " times" << std::endl;
+			Worker::insertPut(key, value);
+		}
+		{
+        	unique_lock <mutex> lck(Worker::testMu);
+        	Worker::testCond.wait(lck, []() {
+        		return Worker::testCnt.load() == 0;
+        	});
+		}
+		endtime = std::chrono::system_clock::now();
+		d = endtime - starttime;
+		std::cout << "[TEST] time: " << d.count() << std::endl;
+
 		Worker::insertPut("a", "a");
 		std::cout << "[TEST] throughput(put:get 0:1, record=10000)" << std::endl;
 		key = "a";
